@@ -39,12 +39,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const grouped = groupByCategory(allStores);
   const categoryStores = grouped[categorySlug] ?? [];
 
-  // If category doesn't exist at all, 404
   if (allStores.length > 0 && categoryStores.length === 0) notFound();
 
   const cat = categoryStores[0]?.category ?? { slug: categorySlug, name: categorySlug, emoji: '🏪' };
 
-  // Search filter
   let stores = categoryStores;
   if (searchQuery) {
     stores = stores.filter((s) =>
@@ -53,10 +51,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: "#f4f5f7" }}>
       {/* Header */}
-      <header style={{ background: "linear-gradient(135deg, #1a1a2e, #0f3460)" }} className="px-4 py-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-3 mb-4">
+      <header style={{ background: "linear-gradient(135deg, #1a1a2e, #0f3460)" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-3 flex items-center gap-3">
           <Link href="/" className="text-white/50 hover:text-white text-sm">LocalAdda</Link>
           <span className="text-white/30">/</span>
           <Link href={`/${citySlug}`} className="text-white/70 hover:text-white text-sm">{city.name}</Link>
@@ -65,9 +63,9 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
 
         {/* Search */}
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
           <form method="GET">
-            <div className="relative">
+            <div className="relative max-w-xl">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
               <input
                 name="q"
@@ -80,7 +78,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Title */}
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-2xl font-black text-gray-900">
@@ -103,14 +101,13 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {/* Store grid */}
+        {/* Store grid — 1 col mobile, 2 col tablet, 3 col desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {stores.map((store) => (
             <StoreCard key={store.id} store={store} citySlug={citySlug} />
           ))}
         </div>
 
-        {/* Back link */}
         {stores.length > 0 && (
           <div className="mt-8 text-center">
             <Link href={`/${citySlug}`} className="text-gray-400 text-sm hover:text-gray-600">
@@ -122,4 +119,3 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     </div>
   );
 }
-

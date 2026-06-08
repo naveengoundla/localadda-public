@@ -60,30 +60,33 @@ export default async function CityPage({ params, searchParams }: Props) {
   }));
 
   return (
-    <div className="min-h-screen" style={{ background: "#f7f7f8" }}>
+    <div className="min-h-screen" style={{ background: "#f4f5f7" }}>
 
       {/* ── Top header ── */}
       <header style={{ background: "linear-gradient(160deg, #1a1a2e 0%, #0f3460 100%)" }}>
-        <div className="max-w-3xl mx-auto px-4 pt-5 pb-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between">
           <Link href="/" className="text-xl font-black text-white tracking-tight">
             Local<span style={{ color: "#f5a623" }}>Adda</span>
           </Link>
-          <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5">
-            <span className="text-white text-sm">📍</span>
-            <span className="text-white font-semibold text-sm">{city.name}</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5">
+              <span className="text-white text-sm">📍</span>
+              <span className="text-white font-semibold text-sm">{city.name}</span>
+            </div>
+            <Link href="/" className="text-white/50 hover:text-white text-xs hidden sm:block">Change city</Link>
           </div>
         </div>
 
         {/* Search */}
-        <div className="max-w-3xl mx-auto px-4 pb-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
           <form method="GET">
-            <div className="relative">
+            <div className="relative max-w-xl">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔍</span>
               <input
                 name="q"
                 defaultValue={searchQuery}
-                placeholder={`Search stores, products in ${city.name}…`}
-                className="w-full pl-11 pr-4 py-3.5 rounded-2xl text-gray-900 text-sm font-medium outline-none shadow-lg"
+                placeholder={`Search stores in ${city.name}…`}
+                className="w-full pl-11 pr-4 py-3 rounded-2xl text-gray-900 text-sm font-medium outline-none shadow-lg"
                 style={{ background: "rgba(255,255,255,0.97)" }}
               />
             </div>
@@ -91,7 +94,7 @@ export default async function CityPage({ params, searchParams }: Props) {
         </div>
 
         {/* Category chips — scrollable */}
-        <div className="max-w-3xl mx-auto px-4 pb-4 flex gap-2.5 overflow-x-auto scrollbar-hide">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
           <Link href={`/${citySlug}${searchQuery ? `?q=${searchQuery}` : ''}`}>
             <div className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${!filterCategory ? "bg-white text-red-500 border-white shadow-md" : "bg-white/15 text-white border-transparent"}`}>
               All
@@ -115,7 +118,7 @@ export default async function CityPage({ params, searchParams }: Props) {
       </header>
 
       {/* ── Content ── */}
-      <div className="max-w-3xl mx-auto px-4 py-5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
         {/* Result count */}
         {(searchQuery || filterCategory) && (
@@ -143,24 +146,24 @@ export default async function CityPage({ params, searchParams }: Props) {
           const catStores = grouped[catSlug];
           const cat = catStores[0].category;
           return (
-            <section key={catSlug} className="mb-8">
+            <section key={catSlug} className="mb-10">
               {/* Section header */}
               {!filterCategory && (
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{cat.emoji}</span>
-                    <h2 className="font-black text-gray-900 text-base">{cat.name}</h2>
+                    <span className="text-2xl">{cat.emoji}</span>
+                    <h2 className="font-black text-gray-900 text-lg">{cat.name}</h2>
                     <span className="text-gray-400 text-sm font-medium">({catStores.length})</span>
                   </div>
                   <Link href={`/${citySlug}/${catSlug}`}
-                    className="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-full">
+                    className="text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors">
                     See all →
                   </Link>
                 </div>
               )}
 
-              {/* Cards */}
-              <div className="flex flex-col gap-3">
+              {/* Cards — 1 col mobile, 2 col tablet, 3 col desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {catStores.map((store) => (
                   <StoreCard key={store.id} store={store} citySlug={citySlug} />
                 ))}
@@ -170,10 +173,10 @@ export default async function CityPage({ params, searchParams }: Props) {
         })}
 
         {/* Footer */}
-        <div className="text-center pt-4 pb-8">
-          <p className="text-gray-400 text-xs">
+        <div className="text-center pt-4 pb-8 border-t border-gray-200 mt-4">
+          <p className="text-gray-400 text-sm">
             {allStores.length} stores listed in {city.name} ·{" "}
-            <Link href="https://dashboard.localadda.com" className="text-red-400 font-semibold">
+            <Link href="https://dashboard.localadda.com" className="text-red-400 font-semibold hover:text-red-600">
               List yours free →
             </Link>
           </p>
@@ -182,4 +185,3 @@ export default async function CityPage({ params, searchParams }: Props) {
     </div>
   );
 }
-
