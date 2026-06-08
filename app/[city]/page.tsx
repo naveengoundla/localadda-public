@@ -93,25 +93,35 @@ export default async function CityPage({ params, searchParams }: Props) {
           </form>
         </div>
 
-        {/* Category chips — scrollable */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
-          <Link href={`/${citySlug}${searchQuery ? `?q=${searchQuery}` : ''}`}>
-            <div className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${!filterCategory ? "bg-white text-red-500 border-white shadow-md" : "bg-white/15 text-white border-transparent"}`}>
-              All
-              <span className={`text-xs font-semibold ${!filterCategory ? "text-red-400" : "text-white/70"}`}>
-                {allStores.length}
-              </span>
+        {/* Category icons — fixed-size circles, always consistent */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 flex gap-4 overflow-x-auto scrollbar-hide">
+          {/* All */}
+          <Link href={`/${citySlug}${searchQuery ? `?q=${searchQuery}` : ''}`}
+            className="flex-shrink-0 flex flex-col items-center gap-1.5">
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl transition-all
+              ${!filterCategory
+                ? "bg-white shadow-lg ring-2 ring-white"
+                : "bg-white/15 ring-2 ring-transparent"}`}>
+              🏪
             </div>
+            <span className={`text-xs font-bold ${!filterCategory ? "text-white" : "text-white/60"}`}>
+              All
+            </span>
           </Link>
+
           {uniqueCategories.map((cat) => (
-            <Link key={cat.slug} href={`/${citySlug}?category=${cat.slug}${searchQuery ? `&q=${searchQuery}` : ''}`}>
-              <div className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold border-2 transition-all ${filterCategory === cat.slug ? "bg-white text-red-500 border-white shadow-md" : "bg-white/15 text-white border-transparent"}`}>
-                <span>{cat.emoji}</span>
-                <span>{cat.name}</span>
-                <span className={`text-xs font-semibold ${filterCategory === cat.slug ? "text-red-400" : "text-white/70"}`}>
-                  {cat.count}
-                </span>
+            <Link key={cat.slug}
+              href={`/${citySlug}?category=${cat.slug}${searchQuery ? `&q=${searchQuery}` : ''}`}
+              className="flex-shrink-0 flex flex-col items-center gap-1.5">
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all
+                ${filterCategory === cat.slug
+                  ? "bg-white shadow-lg ring-2 ring-white"
+                  : "bg-white/15 ring-2 ring-transparent"}`}>
+                {cat.emoji}
               </div>
+              <span className={`text-xs font-bold text-center w-16 truncate ${filterCategory === cat.slug ? "text-white" : "text-white/60"}`}>
+                {cat.name.split(' ')[0]}
+              </span>
             </Link>
           ))}
         </div>
