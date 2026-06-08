@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { getCities, getStoresByCity, groupByCategory } from "@/lib/api";
-import type { Store } from "@/types";
+import { StoreCard } from "@/components/StoreCard";
 
 interface Props {
   params: Promise<{ city: string }>;
@@ -184,93 +183,3 @@ export default async function CityPage({ params, searchParams }: Props) {
   );
 }
 
-function StoreCard({ store, citySlug }: { store: Store; citySlug: string }) {
-  const activeDiscount = store.discounts?.find((d) => d.isActive);
-  const itemCount = store.items?.length ?? 0;
-
-  return (
-    <Link href={`/${citySlug}/${store.category.slug}/${store.slug}`}>
-      <div className="bg-white rounded-2xl overflow-hidden flex"
-        style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.07)", border: "1px solid rgba(0,0,0,0.05)" }}>
-
-        {/* Left — square image / emoji */}
-        <div className="relative flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32">
-          {store.bannerUrl ? (
-            <Image
-              src={store.bannerUrl}
-              alt={store.name}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl"
-              style={{ background: "linear-gradient(135deg, #fff5f3, #fff0e0)" }}>
-              {store.category.emoji}
-            </div>
-          )}
-          {activeDiscount && (
-            <div className="absolute bottom-0 left-0 right-0 bg-red-500 text-white text-center"
-              style={{ fontSize: 10, fontWeight: 800, padding: "2px 0" }}>
-              🎉 {activeDiscount.valueLabel || "OFFER"}
-            </div>
-          )}
-        </div>
-
-        {/* Right — info */}
-        <div className="flex-1 px-3.5 py-3 flex flex-col justify-between min-w-0">
-          <div>
-            {/* Name + category badge */}
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-black text-gray-900 text-sm leading-tight">{store.name}</h3>
-              <span className="flex-shrink-0 text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
-                {store.category.emoji} {store.category.name}
-              </span>
-            </div>
-
-            {/* Address */}
-            {store.address && (
-              <p className="text-gray-400 text-xs mt-1 truncate">
-                📍 {store.address}
-              </p>
-            )}
-
-            {/* Items count + discount */}
-            <div className="flex items-center gap-2 mt-1.5">
-              {itemCount > 0 && (
-                <span className="text-xs text-gray-400">
-                  {itemCount} product{itemCount > 1 ? "s" : ""}
-                </span>
-              )}
-              {activeDiscount && (
-                <>
-                  {itemCount > 0 && <span className="text-gray-200">·</span>}
-                  <span className="text-xs font-bold text-green-600">
-                    {activeDiscount.title}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Bottom — call CTA */}
-          <div className="flex items-center justify-between mt-2.5">
-            {store.phone ? (
-              <a
-                href={`tel:${store.phone}`}
-                className="flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl"
-                style={{ boxShadow: "0 2px 8px rgba(39,174,96,0.35)" }}
-              >
-                📞 Call Now
-              </a>
-            ) : (
-              <span />
-            )}
-            <span className="text-red-400 text-xs font-bold">
-              View →
-            </span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
