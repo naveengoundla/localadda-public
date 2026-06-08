@@ -126,38 +126,54 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
 function StoreCard({ store, citySlug }: { store: Store; citySlug: string }) {
   const activeDiscount = store.discounts?.find((d) => d.isActive);
+  const itemCount = store.items?.length ?? 0;
 
   return (
     <Link href={`/${citySlug}/${store.category.slug}/${store.slug}`}>
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
-        {store.bannerUrl ? (
-          <div className="relative h-36">
+      <div className="bg-white rounded-2xl overflow-hidden flex"
+        style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.07)", border: "1px solid rgba(0,0,0,0.05)" }}>
+        {/* Left image */}
+        <div className="relative flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32">
+          {store.bannerUrl ? (
             <Image src={store.bannerUrl} alt={store.name} fill className="object-cover" />
-            {activeDiscount && (
-              <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                🎉 {activeDiscount.valueLabel || "Offer"}
-              </span>
-            )}
-          </div>
-        ) : (
-          <div className="h-36 bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
-            <span className="text-5xl">{store.category.emoji}</span>
-          </div>
-        )}
-        <div className="p-4">
-          <div className="font-bold text-gray-900 text-base mb-1">{store.name}</div>
-          {store.address && (
-            <div className="text-gray-500 text-xs mb-3 truncate">📍 {store.address}</div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-4xl"
+              style={{ background: "linear-gradient(135deg, #fff5f3, #fff0e0)" }}>
+              {store.category.emoji}
+            </div>
           )}
-          <div className="flex items-center justify-between">
-            {store.phone && (
-              <a href={`tel:${store.phone}`} className="flex items-center gap-1 bg-green-50 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                📞 Call
+          {activeDiscount && (
+            <div className="absolute bottom-0 left-0 right-0 bg-red-500 text-white text-center"
+              style={{ fontSize: 10, fontWeight: 800, padding: "2px 0" }}>
+              🎉 {activeDiscount.valueLabel || "OFFER"}
+            </div>
+          )}
+        </div>
+        {/* Right info */}
+        <div className="flex-1 px-3.5 py-3 flex flex-col justify-between min-w-0">
+          <div>
+            <h3 className="font-black text-gray-900 text-sm leading-tight">{store.name}</h3>
+            {store.address && (
+              <p className="text-gray-400 text-xs mt-1 truncate">📍 {store.address}</p>
+            )}
+            <div className="flex items-center gap-2 mt-1.5">
+              {itemCount > 0 && (
+                <span className="text-xs text-gray-400">{itemCount} product{itemCount > 1 ? "s" : ""}</span>
+              )}
+              {activeDiscount && (
+                <span className="text-xs font-bold text-green-600">{activeDiscount.title}</span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between mt-2.5">
+            {store.phone ? (
+              <a href={`tel:${store.phone}`}
+                className="flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl"
+                style={{ boxShadow: "0 2px 8px rgba(39,174,96,0.35)" }}>
+                📞 Call Now
               </a>
-            )}
-            {store.items && store.items.length > 0 && (
-              <span className="text-gray-400 text-xs">{store.items.length} items</span>
-            )}
+            ) : <span />}
+            <span className="text-red-400 text-xs font-bold">View →</span>
           </div>
         </div>
       </div>
