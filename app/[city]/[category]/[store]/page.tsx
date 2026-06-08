@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { getStore } from "@/lib/api";
+import { getMapsUrl } from "@/lib/maps";
 
 interface Props {
   params: Promise<{ city: string; category: string; store: string }>;
@@ -35,6 +36,7 @@ export default async function StorePage({ params }: Props) {
   const allItems = [...featuredItems, ...otherItems];
 
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const mapsUrl = getMapsUrl(store.mapsUrl, store.address, store.city?.name);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -99,18 +101,24 @@ export default async function StorePage({ params }: Props) {
                 </a>
               )}
               {store.address && (
-                <div className="flex items-center gap-3 py-2">
+                <a
+                  href={mapsUrl ?? undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 py-2"
+                  style={mapsUrl ? {} : { pointerEvents: 'none' }}
+                >
                   <span className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-lg">📍</span>
                   <div className="flex-1">
                     <div className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Address</div>
                     <div className="text-gray-800 text-sm">{store.address}</div>
                   </div>
-                  {store.mapsUrl && (
-                    <a href={store.mapsUrl} target="_blank" rel="noreferrer" className="ml-auto bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                      Maps
-                    </a>
+                  {mapsUrl && (
+                    <span className="ml-auto bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                      🗺️ Directions
+                    </span>
                   )}
-                </div>
+                </a>
               )}
             </div>
           </div>
@@ -185,12 +193,29 @@ export default async function StorePage({ params }: Props) {
             </div>
           )}
 
-          {/* CTA */}
-          {store.phone && (
-            <a href={`tel:${store.phone}`} className="block w-full py-4 rounded-2xl text-center font-black text-white text-lg" style={{ background: "linear-gradient(135deg, #e8401c, #f5a623)" }}>
-              📞 Call {store.name}
-            </a>
-          )}
+          {/* CTA buttons */}
+          <div className="flex gap-3">
+            {store.phone && (
+              <a
+                href={`tel:${store.phone}`}
+                className="flex-1 py-4 rounded-2xl text-center font-black text-white text-base"
+                style={{ background: "linear-gradient(135deg, #27ae60, #2ecc71)", boxShadow: "0 4px 15px rgba(39,174,96,0.4)" }}
+              >
+                📞 Call Now
+              </a>
+            )}
+            {mapsUrl && (
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 py-4 rounded-2xl text-center font-black text-white text-base"
+                style={{ background: "linear-gradient(135deg, #2980b9, #3498db)", boxShadow: "0 4px 15px rgba(52,152,219,0.4)" }}
+              >
+                🗺️ Directions
+              </a>
+            )}
+          </div>
 
           {/* Back link */}
           <div className="text-center pb-6">

@@ -3,10 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Store } from "@/types";
+import { getMapsUrl } from "@/lib/maps";
 
 export function StoreCard({ store, citySlug }: { store: Store; citySlug: string }) {
   const activeDiscount = store.discounts?.find((d) => d.isActive);
   const itemCount = store.items?.length ?? 0;
+  const mapsUrl = getMapsUrl(store.mapsUrl, store.address, store.city?.name);
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden flex"
@@ -56,18 +58,30 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-2.5">
-          {store.phone ? (
+        <div className="flex items-center gap-2 mt-2.5">
+          {store.phone && (
             <a
               href={`tel:${store.phone}`}
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1.5 bg-green-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl"
-              style={{ boxShadow: "0 2px 8px rgba(39,174,96,0.35)" }}
+              className="flex items-center gap-1 bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-xl"
+              style={{ boxShadow: "0 2px 8px rgba(39,174,96,0.3)" }}
             >
-              📞 Call Now
+              📞 Call
             </a>
-          ) : <span />}
-          <span className="text-red-400 text-xs font-bold">View →</span>
+          )}
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl"
+              style={{ boxShadow: "0 2px 8px rgba(59,130,246,0.3)" }}
+            >
+              🗺️ Directions
+            </a>
+          )}
+          <span className="ml-auto text-red-400 text-xs font-bold">View →</span>
         </div>
       </Link>
     </div>
