@@ -188,7 +188,6 @@ function StoreCard({ store, citySlug }: { store: Store; citySlug: string }) {
             {store.phone && (
               <a
                 href={`tel:${store.phone}`}
-                onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-1 bg-green-50 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full"
               >
                 📞 Call
