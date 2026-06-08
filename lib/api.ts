@@ -9,11 +9,14 @@ export async function getCities(): Promise<City[]> {
 }
 
 export async function getStoresByCity(citySlug: string): Promise<Store[]> {
-  const res = await fetch(`${API}/api/cities/${citySlug}/stores`, {
-    next: { revalidate: 300 },
-  });
+  const url = `${API}/api/cities/${citySlug}/stores`;
+  console.log(`[API] getStoresByCity → ${url}`);
+  const res = await fetch(url, { next: { revalidate: 300 } });
+  console.log(`[API] getStoresByCity status: ${res.status}`);
   if (!res.ok) return [];
-  return res.json();
+  const data = await res.json();
+  console.log(`[API] getStoresByCity count: ${data.length}`);
+  return data;
 }
 
 export async function getStore(storeSlug: string): Promise<Store | null> {

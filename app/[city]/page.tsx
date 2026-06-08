@@ -34,8 +34,11 @@ export default async function CityPage({ params, searchParams }: Props) {
     getStoresByCity(citySlug),
   ]);
 
-  const city = cities.find((c) => c.slug === citySlug);
-  if (!city) notFound();
+  // Build a city object from whatever we have — don't 404 just because getCities failed
+  const cityFromList = cities.find((c) => c.slug === citySlug);
+  const cityFromStores = allStores[0]?.city;
+  const city = cityFromList ?? cityFromStores ?? { slug: citySlug, name: citySlug.charAt(0).toUpperCase() + citySlug.slice(1), state: '', id: '' };
+  if (!cityFromList && !cityFromStores && allStores.length === 0) notFound();
 
   // Filter by search
   let stores = allStores;
