@@ -37,11 +37,9 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
             {store.category.emoji}
           </div>
         )}
-        {/* Category color strip at bottom of image */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: gradient }} />
         {activeDiscount && (
-          <div className="absolute top-2 left-0 text-white font-black"
-            style={{ fontSize: 9, background: '#e8401c', padding: '2px 6px', borderRadius: '0 6px 6px 0' }}>
+          <div className="absolute top-0 left-0 text-white font-black"
+            style={{ fontSize: 9, background: '#e8401c', padding: '3px 7px', borderRadius: '0 0 8px 0' }}>
             {activeDiscount.valueLabel || 'OFFER'}
           </div>
         )}
@@ -50,44 +48,40 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
       {/* Info */}
       <div className="flex-1 flex flex-col justify-between px-3 py-2.5 min-w-0">
         <Link href={href}>
-          {/* Name + emoji badge */}
           <div className="flex items-start justify-between gap-1.5">
             <h3 className="font-black leading-snug line-clamp-2 flex-1"
-              style={{ fontSize: 13.5, color: '#f0f0f5' }}>
+              style={{ fontSize: 13.5, color: '#1a1a2e' }}>
               {store.name}
             </h3>
-            {/* Tiny colored category dot */}
-            <span className="flex-shrink-0 w-5 h-5 rounded-full mt-0.5 flex items-center justify-center text-xs"
-              style={{ background: gradient }}>
-              {store.category.emoji.slice(0, 1)}
+            {/* Category pill */}
+            <span className="flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded-full mt-0.5"
+              style={{ background: '#f4f2ee', color: '#888896' }}>
+              {store.category.emoji}
             </span>
           </div>
 
-          {/* Address */}
           {store.address && (
-            <p className="text-xs mt-1 truncate" style={{ color: 'rgba(255,255,255,0.38)' }}>
+            <p className="text-xs mt-1 truncate" style={{ color: '#aaa' }}>
               📍 {store.address}
             </p>
           )}
 
-          {/* Meta chips */}
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
             {itemCount > 0 && (
-              <span className="text-xs rounded-full px-2 py-0.5"
-                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
+              <span className="text-xs px-2 py-0.5 rounded-full"
+                style={{ background: '#f4f2ee', color: '#888896' }}>
                 {itemCount} items
               </span>
             )}
             {activeDiscount && (
-              <span className="text-xs font-bold rounded-full px-2 py-0.5"
-                style={{ background: 'rgba(29,185,84,0.15)', color: '#1db954' }}>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: '#edfbf1', color: '#1db954' }}>
                 🎉 {activeDiscount.title}
               </span>
             )}
           </div>
         </Link>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2 mt-2">
           {store.phone && (
             <a href={`tel:${store.phone}`} onClick={(e) => e.stopPropagation()}
@@ -102,8 +96,7 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
               🗺️
             </a>
           )}
-          <Link href={href} className="ml-auto text-xs font-black"
-            style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <Link href={href} className="ml-auto text-xs font-black" style={{ color: '#ccc' }}>
             View →
           </Link>
         </div>
