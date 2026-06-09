@@ -53,18 +53,19 @@ export default async function StorePage({ params }: Props) {
         </div>
       </header>
 
-      {/* Banner — full width, taller on desktop */}
+      {/* Banner */}
       {store.bannerUrl ? (
-        <div className="relative h-52 sm:h-64 lg:h-80 w-full">
-          <Image src={store.bannerUrl} alt={store.name} fill className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 pb-5">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white">{store.name}</h1>
-            <p className="text-white/80 text-sm mt-1">{store.category.emoji} {store.category.name} · {store.city.name}</p>
+        <div className="relative w-full" style={{ height: 220 }}>
+          <Image src={store.bannerUrl} alt={store.name} fill className="object-cover" sizes="100vw" />
+          {/* Strong gradient so name is always readable */}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)" }} />
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight">{store.name}</h1>
+            <p className="text-white/80 text-sm mt-0.5">{store.category.emoji} {store.category.name} · {store.city.name}</p>
           </div>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+        <div className="px-4 sm:px-6 pt-5 pb-2 max-w-7xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900">{store.name}</h1>
           <p className="text-gray-500 text-sm mt-1">{store.category.emoji} {store.category.name} · {store.city.name}</p>
         </div>
