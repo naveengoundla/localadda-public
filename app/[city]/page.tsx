@@ -9,6 +9,18 @@ interface Props {
   searchParams: Promise<{ category?: string; q?: string }>;
 }
 
+const CAT_GRADIENT: Record<string, string> = {
+  grocery:    'linear-gradient(135deg,#11998e,#38ef7d)',
+  clothing:   'linear-gradient(135deg,#f093fb,#f5576c)',
+  mobile:     'linear-gradient(135deg,#4facfe,#00f2fe)',
+  hardware:   'linear-gradient(135deg,#f7971e,#ffd200)',
+  medical:    'linear-gradient(135deg,#ee9ca7,#ffdde1)',
+  books:      'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+  restaurant: 'linear-gradient(135deg,#f7971e,#f5576c)',
+  vegetables: 'linear-gradient(135deg,#56ab2f,#a8e063)',
+  electrical: 'linear-gradient(135deg,#4776E6,#8E54E9)',
+};
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug } = await params;
   const cities = await getCities();
@@ -17,10 +29,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Local Stores in ${city.name} — LocalAdda`,
     description: `Discover grocery, clothing, hardware and more local stores in ${city.name}, ${city.state}.`,
-    openGraph: {
-      title: `Local Stores in ${city.name}`,
-      description: `Browse all local stores in ${city.name} on LocalAdda`,
-    },
   };
 }
 
@@ -60,120 +68,131 @@ export default async function CityPage({ params, searchParams }: Props) {
   }));
 
   return (
-    <div className="min-h-screen" style={{ background: "#f4f5f7" }}>
+    <div style={{ minHeight: '100vh', background: '#0a0b14' }}>
 
-      {/* ── Top header ── */}
-      <header style={{ background: "linear-gradient(160deg, #1a1a2e 0%, #0f3460 100%)" }}>
+      {/* ── Header ── */}
+      <header style={{ background: 'linear-gradient(180deg, #111223 0%, #0a0b14 100%)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-black text-white tracking-tight">
-            Local<span style={{ color: "#f5a623" }}>Adda</span>
+          <Link href="/" className="text-xl font-black tracking-tight" style={{ color: '#f5a623' }}>
+            Local<span style={{ color: '#f0f0f5' }}>Adda</span>
           </Link>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5">
-              <span className="text-white text-sm">📍</span>
-              <span className="text-white font-semibold text-sm">{city.name}</span>
+            <div className="flex items-center gap-2 rounded-full px-3 py-1.5"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <span style={{ fontSize: 14 }}>📍</span>
+              <span className="font-bold text-sm" style={{ color: '#f0f0f5' }}>{city.name}</span>
             </div>
-            <Link href="/" className="text-white/50 hover:text-white text-xs hidden sm:block">Change city</Link>
+            <Link href="/" className="text-xs hidden sm:block" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Change →
+            </Link>
           </div>
         </div>
 
         {/* Search */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
           <form method="GET">
-            <div className="relative max-w-xl">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔍</span>
+            <div className="relative" style={{ maxWidth: 520 }}>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base" style={{ color: 'rgba(255,255,255,0.3)' }}>🔍</span>
               <input
                 name="q"
                 defaultValue={searchQuery}
                 placeholder={`Search stores in ${city.name}…`}
-                className="w-full pl-11 pr-4 py-3 rounded-2xl text-gray-900 text-sm font-medium outline-none shadow-lg"
-                style={{ background: "rgba(255,255,255,0.97)" }}
+                className="search-input w-full text-sm font-medium"
+                style={{ paddingLeft: 44, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}
               />
             </div>
           </form>
         </div>
 
-        {/* Category icons — fixed-size circles, always consistent */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 flex gap-4 overflow-x-auto scrollbar-hide">
+        {/* Category icon row */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-5 flex gap-5 overflow-x-auto scrollbar-hide">
           {/* All */}
           <Link href={`/${citySlug}${searchQuery ? `?q=${searchQuery}` : ''}`}
-            className="flex-shrink-0 flex flex-col items-center gap-1.5">
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl transition-all
-              ${!filterCategory
-                ? "bg-white shadow-lg ring-2 ring-white"
-                : "bg-white/15 ring-2 ring-transparent"}`}>
+            className="flex-shrink-0 flex flex-col items-center gap-2">
+            <div className={`cat-icon ${!filterCategory ? 'active' : ''}`}
+              style={{ background: !filterCategory ? 'linear-gradient(135deg,#f5a623,#e8401c)' : 'rgba(255,255,255,0.08)' }}>
               🏪
             </div>
-            <span className={`text-xs font-bold ${!filterCategory ? "text-white" : "text-white/60"}`}>
-              All
-            </span>
+            <span className="text-xs font-bold" style={{ color: !filterCategory ? '#f0f0f5' : 'rgba(255,255,255,0.4)' }}>All</span>
           </Link>
 
-          {uniqueCategories.map((cat) => (
-            <Link key={cat.slug}
-              href={`/${citySlug}?category=${cat.slug}${searchQuery ? `&q=${searchQuery}` : ''}`}
-              className="flex-shrink-0 flex flex-col items-center gap-1.5">
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all
-                ${filterCategory === cat.slug
-                  ? "bg-white shadow-lg ring-2 ring-white"
-                  : "bg-white/15 ring-2 ring-transparent"}`}>
-                {cat.emoji}
-              </div>
-              <span className={`text-xs font-bold text-center w-16 truncate ${filterCategory === cat.slug ? "text-white" : "text-white/60"}`}>
-                {cat.name.split(' ')[0]}
-              </span>
-            </Link>
-          ))}
+          {uniqueCategories.map((cat) => {
+            const active = filterCategory === cat.slug;
+            const grad = CAT_GRADIENT[cat.slug] || 'linear-gradient(135deg,#667eea,#764ba2)';
+            return (
+              <Link key={cat.slug}
+                href={`/${citySlug}?category=${cat.slug}${searchQuery ? `&q=${searchQuery}` : ''}`}
+                className="flex-shrink-0 flex flex-col items-center gap-2">
+                <div className={`cat-icon ${active ? 'active' : ''}`}
+                  style={{ background: active ? grad : 'rgba(255,255,255,0.08)' }}>
+                  {cat.emoji}
+                </div>
+                <span className="text-xs font-bold text-center" style={{ color: active ? '#f0f0f5' : 'rgba(255,255,255,0.4)', width: 60 }}>
+                  {cat.name.split(' ')[0]}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </header>
 
       {/* ── Content ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-7">
 
-        {/* Result count */}
+        {/* Result hint */}
         {(searchQuery || filterCategory) && (
-          <p className="text-sm text-gray-500 font-medium mb-4">
-            {stores.length === 0 ? "No stores found" : `${stores.length} store${stores.length > 1 ? "s" : ""} found`}
-            {searchQuery && <span> for "<strong>{searchQuery}</strong>"</span>}
-            {filterCategory && <span> in <strong>{uniqueCategories.find(c => c.slug === filterCategory)?.name}</strong></span>}
+          <p className="text-sm font-medium mb-5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            {stores.length === 0 ? "No stores found" : `${stores.length} store${stores.length > 1 ? "s" : ""}`}
+            {searchQuery && <span> for "<span style={{ color: '#f5a623' }}>{searchQuery}</span>"</span>}
+            {filterCategory && <span> in <span style={{ color: '#f5a623' }}>{uniqueCategories.find(c => c.slug === filterCategory)?.name}</span></span>}
           </p>
         )}
 
-        {/* No results */}
+        {/* Empty state */}
         {stores.length === 0 && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🏪</div>
-            <p className="font-bold text-gray-700 text-lg">No stores found</p>
-            <p className="text-gray-400 text-sm mt-1">Try a different search or category</p>
-            <Link href={`/${citySlug}`} className="mt-5 inline-block bg-red-500 text-white text-sm font-bold px-5 py-2.5 rounded-full">
-              Clear filters
+            <p className="font-bold text-lg" style={{ color: '#f0f0f5' }}>No stores found</p>
+            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Try a different search or category</p>
+            <Link href={`/${citySlug}`}>
+              <button className="mt-5 text-sm font-bold px-5 py-2.5 rounded-full"
+                style={{ background: '#e8401c', color: '#fff' }}>
+                Clear filters
+              </button>
             </Link>
           </div>
         )}
 
-        {/* Stores by category */}
+        {/* Category sections */}
         {displayCategories.map((catSlug) => {
           const catStores = grouped[catSlug];
           const cat = catStores[0].category;
+          const grad = CAT_GRADIENT[catSlug] || 'linear-gradient(135deg,#667eea,#764ba2)';
           return (
             <section key={catSlug} className="mb-10">
-              {/* Section header */}
               {!filterCategory && (
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{cat.emoji}</span>
-                    <h2 className="font-black text-gray-900 text-lg">{cat.name}</h2>
-                    <span className="text-gray-400 text-sm font-medium">({catStores.length})</span>
+                  <div className="flex items-center gap-3">
+                    {/* Colored emoji bubble */}
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                      style={{ background: grad }}>
+                      {cat.emoji}
+                    </div>
+                    <div>
+                      <h2 className="font-black text-base" style={{ color: '#f0f0f5' }}>{cat.name}</h2>
+                      <span className="section-label">{catStores.length} stores</span>
+                    </div>
                   </div>
-                  <Link href={`/${citySlug}/${catSlug}`}
-                    className="text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-colors">
-                    See all →
+                  <Link href={`/${citySlug}/${catSlug}`}>
+                    <span className="text-xs font-black px-3 py-1.5 rounded-full"
+                      style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      See all →
+                    </span>
                   </Link>
                 </div>
               )}
 
-              {/* Cards — 1 col mobile, 2 col tablet, 3 col desktop */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {catStores.map((store) => (
                   <StoreCard key={store.id} store={store} citySlug={citySlug} />
                 ))}
@@ -183,10 +202,11 @@ export default async function CityPage({ params, searchParams }: Props) {
         })}
 
         {/* Footer */}
-        <div className="text-center pt-4 pb-8 border-t border-gray-200 mt-4">
-          <p className="text-gray-400 text-sm">
-            {allStores.length} stores listed in {city.name} ·{" "}
-            <Link href="https://dashboard.localadda.com" className="text-red-400 font-semibold hover:text-red-600">
+        <div className="text-center pt-6 pb-8" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>
+            {allStores.length} stores in {city.name} ·{" "}
+            <Link href="https://dashboard.localadda.com"
+              className="font-semibold" style={{ color: '#f5a623' }}>
               List yours free →
             </Link>
           </p>

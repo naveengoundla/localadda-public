@@ -5,77 +5,107 @@ import Image from "next/image";
 import type { Store } from "@/types";
 import { getMapsUrl } from "@/lib/maps";
 
+const CAT_GRADIENT: Record<string, string> = {
+  grocery:    'linear-gradient(135deg,#11998e,#38ef7d)',
+  clothing:   'linear-gradient(135deg,#f093fb,#f5576c)',
+  mobile:     'linear-gradient(135deg,#4facfe,#00f2fe)',
+  hardware:   'linear-gradient(135deg,#f7971e,#ffd200)',
+  medical:    'linear-gradient(135deg,#ee9ca7,#ffdde1)',
+  books:      'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+  restaurant: 'linear-gradient(135deg,#f7971e,#f5576c)',
+  vegetables: 'linear-gradient(135deg,#56ab2f,#a8e063)',
+  electrical: 'linear-gradient(135deg,#4776E6,#8E54E9)',
+};
+
 export function StoreCard({ store, citySlug }: { store: Store; citySlug: string }) {
   const activeDiscount = store.discounts?.find((d) => d.isActive);
   const itemCount = store.items?.length ?? 0;
   const mapsUrl = getMapsUrl(store.mapsUrl, store.address, store.city?.name);
   const href = `/${citySlug}/${store.category.slug}/${store.slug}`;
+  const gradient = CAT_GRADIENT[store.category.slug] || 'linear-gradient(135deg,#667eea,#764ba2)';
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden"
-      style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.07)", border: "1px solid rgba(0,0,0,0.05)" }}>
+    <div className="premium-card flex">
 
-      <div className="flex">
-        {/* Image — fixed 112×112, never stretches */}
-        <Link href={href} className="relative flex-shrink-0" style={{ width: 112, height: 112 }}>
-          {store.bannerUrl ? (
-            <Image src={store.bannerUrl} alt={store.name} fill className="object-cover" sizes="112px" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl"
-              style={{ background: "linear-gradient(135deg, #fff5f3, #fff0e0)" }}>
-              {store.category.emoji}
-            </div>
+      {/* Image — fixed 110×110 */}
+      <Link href={href} className="relative flex-shrink-0" style={{ width: 110, height: 110 }}>
+        {store.bannerUrl ? (
+          <Image src={store.bannerUrl} alt={store.name} fill className="object-cover" sizes="110px" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-3xl"
+            style={{ background: gradient }}>
+            {store.category.emoji}
+          </div>
+        )}
+        {/* Category color strip at bottom of image */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: gradient }} />
+        {activeDiscount && (
+          <div className="absolute top-2 left-0 text-white font-black"
+            style={{ fontSize: 9, background: '#e8401c', padding: '2px 6px', borderRadius: '0 6px 6px 0' }}>
+            {activeDiscount.valueLabel || 'OFFER'}
+          </div>
+        )}
+      </Link>
+
+      {/* Info */}
+      <div className="flex-1 flex flex-col justify-between px-3 py-2.5 min-w-0">
+        <Link href={href}>
+          {/* Name + emoji badge */}
+          <div className="flex items-start justify-between gap-1.5">
+            <h3 className="font-black leading-snug line-clamp-2 flex-1"
+              style={{ fontSize: 13.5, color: '#f0f0f5' }}>
+              {store.name}
+            </h3>
+            {/* Tiny colored category dot */}
+            <span className="flex-shrink-0 w-5 h-5 rounded-full mt-0.5 flex items-center justify-center text-xs"
+              style={{ background: gradient }}>
+              {store.category.emoji.slice(0, 1)}
+            </span>
+          </div>
+
+          {/* Address */}
+          {store.address && (
+            <p className="text-xs mt-1 truncate" style={{ color: 'rgba(255,255,255,0.38)' }}>
+              📍 {store.address}
+            </p>
           )}
-          {activeDiscount && (
-            <div className="absolute bottom-0 left-0 right-0 bg-red-500 text-white text-center"
-              style={{ fontSize: 9, fontWeight: 800, padding: "2px 4px", lineHeight: 1.4 }}>
-              🎉 {activeDiscount.valueLabel || "OFFER"}
-            </div>
-          )}
+
+          {/* Meta chips */}
+          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+            {itemCount > 0 && (
+              <span className="text-xs rounded-full px-2 py-0.5"
+                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
+                {itemCount} items
+              </span>
+            )}
+            {activeDiscount && (
+              <span className="text-xs font-bold rounded-full px-2 py-0.5"
+                style={{ background: 'rgba(29,185,84,0.15)', color: '#1db954' }}>
+                🎉 {activeDiscount.title}
+              </span>
+            )}
+          </div>
         </Link>
 
-        {/* Info */}
-        <div className="flex-1 flex flex-col justify-between px-3 py-2.5 min-w-0">
-          <Link href={href}>
-            <div className="flex items-start justify-between gap-1.5">
-              <h3 className="font-black text-gray-900 text-sm leading-snug line-clamp-2 flex-1">{store.name}</h3>
-              <span className="flex-shrink-0 text-base leading-none mt-0.5">{store.category.emoji}</span>
-            </div>
-            {store.address && (
-              <p className="text-gray-400 text-xs mt-1 truncate">📍 {store.address}</p>
-            )}
-            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-              {itemCount > 0 && (
-                <span className="text-xs text-gray-400">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
-              )}
-              {activeDiscount && (
-                <>
-                  {itemCount > 0 && <span className="text-gray-200">·</span>}
-                  <span className="text-xs font-bold text-green-600 truncate" style={{ maxWidth: 110 }}>
-                    {activeDiscount.title}
-                  </span>
-                </>
-              )}
-            </div>
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 mt-2">
+          {store.phone && (
+            <a href={`tel:${store.phone}`} onClick={(e) => e.stopPropagation()}
+              className="btn-glow-green flex items-center gap-1">
+              📞 Call
+            </a>
+          )}
+          {mapsUrl && (
+            <a href={mapsUrl} target="_blank" rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="btn-glow-blue flex items-center">
+              🗺️
+            </a>
+          )}
+          <Link href={href} className="ml-auto text-xs font-black"
+            style={{ color: 'rgba(255,255,255,0.3)' }}>
+            View →
           </Link>
-
-          <div className="flex items-center gap-2 mt-2">
-            {store.phone && (
-              <a href={`tel:${store.phone}`} onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 bg-green-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl"
-                style={{ boxShadow: "0 2px 6px rgba(39,174,96,0.3)" }}>
-                📞 Call
-              </a>
-            )}
-            {mapsUrl && (
-              <a href={mapsUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 bg-blue-500 text-white text-xs font-bold px-2.5 py-1.5 rounded-xl"
-                style={{ boxShadow: "0 2px 6px rgba(59,130,246,0.3)" }}>
-                🗺️
-              </a>
-            )}
-            <span className="ml-auto text-red-400 text-xs font-bold">View →</span>
-          </div>
         </div>
       </div>
     </div>
