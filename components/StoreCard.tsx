@@ -67,12 +67,6 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
           )}
 
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {itemCount > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ background: '#f4f2ee', color: '#888896' }}>
-                {itemCount} items
-              </span>
-            )}
             {activeDiscount && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                 style={{ background: '#edfbf1', color: '#1db954' }}>
@@ -93,7 +87,7 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
             <a href={mapsUrl} target="_blank" rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="btn-glow-blue flex items-center">
-              🗺️
+              🧭
             </a>
           )}
           <Link href={href} className="ml-auto text-xs font-black" style={{ color: '#ccc' }}>
