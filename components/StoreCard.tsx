@@ -95,7 +95,7 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
               onClick={(e) => e.stopPropagation()}
               className="btn-glow-blue"
               style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-              🧭
+              ↗️
             </a>
           )}
           <Link href={href} style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 800, color: '#ccc', textDecoration: 'none' }}>
