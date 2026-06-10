@@ -4,6 +4,8 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { getStore } from "@/lib/api";
 import { getMapsUrl } from "@/lib/maps";
+import { CityHomeButton } from "@/components/CityHomeButton";
+import { BottomNav } from "@/components/BottomNav";
 
 interface Props {
   params: Promise<{ city: string; category: string; store: string }>;
@@ -76,7 +78,7 @@ export default async function StorePage({ params }: Props) {
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: gradient }} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 safe-bottom">
         <div className="lg:grid lg:grid-cols-3 lg:gap-7">
 
           {/* ── Left ── */}
@@ -199,14 +201,13 @@ export default async function StorePage({ params }: Props) {
               </div>
             )}
 
-            <div className="text-center">
-              <Link href={`/${citySlug}`} className="text-sm font-semibold" style={{ color: '#bbb' }}>
-                ← More in {store.city.name}
-              </Link>
-            </div>
+            <div style={{ height: 80 }} />
           </div>
         </div>
       </div>
+
+      <CityHomeButton citySlug={citySlug} cityName={store.city.name} />
+      <BottomNav citySlug={citySlug} />
     </div>
   );
 }

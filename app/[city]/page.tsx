@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getCities, getStoresByCity, groupByCategory } from "@/lib/api";
 import { StoreCard } from "@/components/StoreCard";
+import { BottomNav } from "@/components/BottomNav";
 import type { Store } from "@/types";
 
 interface Props {
@@ -22,8 +23,6 @@ const CAT_GRADIENT: Record<string, string> = {
   electrical: 'linear-gradient(135deg,#4776E6,#8E54E9)',
 };
 
-// City highlights — tagline, tourist spots, fun fact
-// Future: move this to DB (cities.description / cities.highlights JSON column)
 const CITY_INFO: Record<string, {
   tagline: string;
   highlights: { emoji: string; label: string }[];
@@ -123,7 +122,6 @@ export default async function CityPage({ params, searchParams }: Props) {
   const grouped = groupByCategory(stores);
   const allGrouped = groupByCategory(allStores);
 
-  // Promoted = stores with an active discount (future: paid promoted flag)
   const promotedStores: Store[] = allStores
     .filter((s) => s.discounts?.some((d) => d.isActive))
     .slice(0, 6);
@@ -135,7 +133,6 @@ export default async function CityPage({ params, searchParams }: Props) {
     count: allGrouped[slug].length,
   }));
 
-  // When filtering, show only that category; otherwise show all grouped by category
   const displayCategories = filterCategory
     ? Object.keys(grouped).filter((c) => c === filterCategory)
     : Object.keys(grouped);
@@ -143,45 +140,69 @@ export default async function CityPage({ params, searchParams }: Props) {
   const isDefaultView = !filterCategory && !searchQuery;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f4f2ee' }}>
+    <div style={{ minHeight: '100vh', background: '#f5f3ef' }}>
 
-      {/* ── Dark header ── */}
-      <header style={{ background: 'linear-gradient(160deg,#1a1a2e 0%,#0f3460 100%)' }}>
+      {/* ── Header ── */}
+      <header style={{
+        background: 'linear-gradient(160deg, #1a1a2e 0%, #0f3460 100%)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40,
+      }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-black" style={{ color: '#f5a623' }}>
+          <Link href="/" className="text-xl font-black" style={{ color: '#f5a623', letterSpacing: '-0.02em' }}>
             Local<span style={{ color: '#fff' }}>Adda</span>
           </Link>
-          <div className="flex items-center gap-2 rounded-full px-3 py-1.5"
-            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
-            <span>📍</span>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.13)',
+            borderRadius: 99,
+            padding: '6px 14px',
+          }}>
+            <span style={{ fontSize: 14 }}>📍</span>
             <span className="font-bold text-sm text-white">{city.name}</span>
-            <Link href="/" className="text-xs ml-1 hidden sm:block" style={{ color: 'rgba(255,255,255,0.5)' }}>change</Link>
+            <Link href="/" className="text-xs ml-1 hidden sm:block" style={{ color: 'rgba(255,255,255,0.45)' }}>change</Link>
           </div>
         </div>
 
         {/* Search */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
           <form method="GET">
-            <div className="relative" style={{ maxWidth: 520 }}>
-              <span className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.4)' }}>🔍</span>
-              <input name="q" defaultValue={searchQuery}
+            <div className="relative" style={{ maxWidth: 540 }}>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>🔍</span>
+              <input
+                name="q"
+                defaultValue={searchQuery}
                 placeholder={`Search stores in ${city.name}…`}
                 className="search-input w-full text-sm font-medium"
-                style={{ paddingLeft: 44, paddingRight: 16, paddingTop: 11, paddingBottom: 11 }} />
+                style={{ paddingLeft: 44, paddingRight: 16, paddingTop: 11, paddingBottom: 11 }}
+              />
             </div>
           </form>
         </div>
 
-        {/* Category circles — Home first, then categories */}
+        {/* Category circles */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-5 flex gap-5 overflow-x-auto scrollbar-hide">
-          {/* Home icon — always first, active when no filter */}
+          {/* Home circle — always first */}
           <Link href={`/${citySlug}`} className="flex-shrink-0 flex flex-col items-center gap-2">
-            <div className={`cat-icon ${isDefaultView ? 'active' : ''}`}
-              style={{ background: isDefaultView ? 'linear-gradient(135deg,#f5a623,#e8401c)' : 'rgba(255,255,255,0.12)', fontSize: 24 }}>
+            <div
+              className={`cat-icon ${isDefaultView ? 'active' : ''}`}
+              style={{
+                background: isDefaultView
+                  ? 'linear-gradient(135deg,#f5a623,#e8401c)'
+                  : 'rgba(255,255,255,0.1)',
+                fontSize: 22,
+              }}
+            >
               🏠
             </div>
-            <span className="text-xs font-bold text-center"
-              style={{ color: isDefaultView ? '#fff' : 'rgba(255,255,255,0.5)', width: 60 }}>
+            <span className="text-xs font-bold text-center" style={{
+              color: isDefaultView ? '#fff' : 'rgba(255,255,255,0.45)',
+              width: 56,
+            }}>
               Home
             </span>
           </Link>
@@ -189,15 +210,25 @@ export default async function CityPage({ params, searchParams }: Props) {
           {uniqueCategories.map((cat) => {
             const active = filterCategory === cat.slug;
             return (
-              <Link key={cat.slug}
+              <Link
+                key={cat.slug}
                 href={active ? `/${citySlug}` : `/${citySlug}?category=${cat.slug}${searchQuery ? `&q=${searchQuery}` : ''}`}
-                className="flex-shrink-0 flex flex-col items-center gap-2">
-                <div className={`cat-icon ${active ? 'active' : ''}`}
-                  style={{ background: active ? (CAT_GRADIENT[cat.slug] || 'rgba(255,255,255,0.15)') : 'rgba(255,255,255,0.12)' }}>
+                className="flex-shrink-0 flex flex-col items-center gap-2"
+              >
+                <div
+                  className={`cat-icon ${active ? 'active' : ''}`}
+                  style={{
+                    background: active
+                      ? (CAT_GRADIENT[cat.slug] || 'rgba(255,255,255,0.15)')
+                      : 'rgba(255,255,255,0.1)',
+                  }}
+                >
                   {cat.emoji}
                 </div>
-                <span className="text-xs font-bold text-center"
-                  style={{ color: active ? '#fff' : 'rgba(255,255,255,0.5)', width: 60 }}>
+                <span className="text-xs font-bold text-center" style={{
+                  color: active ? '#fff' : 'rgba(255,255,255,0.45)',
+                  width: 56,
+                }}>
                   {cat.name.split(' ')[0]}
                 </span>
               </Link>
@@ -207,32 +238,59 @@ export default async function CityPage({ params, searchParams }: Props) {
       </header>
 
       {/* ── Content ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 safe-bottom">
 
-        {/* ── Default view: city highlights + promoted ── */}
+        {/* ── Default view ── */}
         {isDefaultView && (
           <>
             {/* City highlight card */}
-            <div className="rounded-2xl overflow-hidden mb-6"
-              style={{ background: 'linear-gradient(135deg,#1a1a2e,#0f3460)', boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#f5a623' }}>
-                      📍 {city.name}, {city.state}
+            <div className="city-highlight-card mb-6 fade-up">
+              <div style={{ padding: '20px 20px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      color: '#f5a623',
+                      marginBottom: 6,
+                    }}>
+                      📍 {city.name}{city.state ? `, ${city.state}` : ''}
                     </p>
-                    <h2 className="text-lg font-black text-white leading-tight">{cityInfo.tagline}</h2>
-                    <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.45)' }}>{cityInfo.funFact}</p>
+                    <h2 style={{
+                      fontSize: 20,
+                      fontWeight: 900,
+                      color: '#fff',
+                      lineHeight: 1.25,
+                      letterSpacing: '-0.02em',
+                      marginBottom: 6,
+                    }}>
+                      {cityInfo.tagline}
+                    </h2>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>
+                      {cityInfo.funFact}
+                    </p>
                   </div>
-                  <div className="text-4xl flex-shrink-0">🗺️</div>
+                  <div style={{ fontSize: 40, flexShrink: 0, opacity: 0.9 }}>🗺️</div>
                 </div>
 
                 {/* Highlight chips */}
-                <div className="flex flex-wrap gap-2 mt-4">
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
                   {cityInfo.highlights.map((h) => (
-                    <span key={h.label}
-                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
-                      style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                    <span key={h.label} style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      padding: '6px 12px',
+                      borderRadius: 99,
+                      background: 'rgba(255,255,255,0.09)',
+                      color: 'rgba(255,255,255,0.82)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      backdropFilter: 'blur(4px)',
+                    }}>
                       {h.emoji} {h.label}
                     </span>
                   ))}
@@ -240,25 +298,20 @@ export default async function CityPage({ params, searchParams }: Props) {
               </div>
             </div>
 
-            {/* Promoted stores */}
+            {/* Today's Deals */}
             {promotedStores.length > 0 && (
-              <section className="mb-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-                      style={{ background: 'linear-gradient(135deg,#e8401c,#f5a623)' }}>
+              <section className="mb-8 fade-up" style={{ animationDelay: '0.05s' }}>
+                <div className="section-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div className="section-icon" style={{ background: 'linear-gradient(135deg,#e8401c,#f5a623)' }}>
                       🔥
                     </div>
                     <div>
-                      <h2 className="font-black text-base" style={{ color: '#1a1a2e' }}>Today's Deals</h2>
-                      <span className="section-label">Stores with active offers</span>
+                      <div style={{ fontWeight: 900, fontSize: 15, color: '#1a1a2e', letterSpacing: '-0.01em' }}>Today's Deals</div>
+                      <div className="section-label">Stores with active offers</div>
                     </div>
                   </div>
-                  {/* Future: "Promote your store" CTA */}
-                  <span className="text-xs font-bold px-3 py-1.5 rounded-full"
-                    style={{ background: '#fff3e8', color: '#e8401c', border: '1px solid #ffd6b8' }}>
-                    Sponsored ✦
-                  </span>
+                  <span className="sponsored-chip">Sponsored ✦</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {promotedStores.map((store) => (
@@ -272,58 +325,71 @@ export default async function CityPage({ params, searchParams }: Props) {
 
         {/* Search results label */}
         {searchQuery && (
-          <p className="text-sm font-medium mb-5" style={{ color: '#888896' }}>
+          <p style={{ fontSize: 13, fontWeight: 500, color: '#9898a8', marginBottom: 20 }}>
             {stores.length === 0 ? 'No stores found' : `${stores.length} result${stores.length > 1 ? 's' : ''}`}
             {' '}for "<strong style={{ color: '#1a1a2e' }}>{searchQuery}</strong>"
           </p>
         )}
 
-        {/* Empty */}
+        {/* Empty state */}
         {stores.length === 0 && (filterCategory || searchQuery) && (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">🏪</div>
-            <p className="font-bold text-lg text-gray-800">No stores found</p>
+          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+            <div style={{ fontSize: 56, marginBottom: 16 }}>🏪</div>
+            <p style={{ fontWeight: 700, fontSize: 17, color: '#1a1a2e' }}>No stores found</p>
             <Link href={`/${citySlug}`}>
-              <button className="mt-5 text-sm font-bold px-5 py-2.5 rounded-full text-white"
-                style={{ background: '#e8401c' }}>Clear filters</button>
+              <button style={{
+                marginTop: 20,
+                fontSize: 13,
+                fontWeight: 700,
+                padding: '10px 24px',
+                borderRadius: 99,
+                background: '#e8401c',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+              }}>
+                Clear filters
+              </button>
             </Link>
           </div>
         )}
 
         {/* Category sections */}
-        {displayCategories.map((catSlug) => {
+        {displayCategories.map((catSlug, i) => {
           const catStores = grouped[catSlug];
           if (!catStores) return null;
           const cat = catStores[0].category;
           const grad = CAT_GRADIENT[catSlug] || 'linear-gradient(135deg,#667eea,#764ba2)';
           return (
-            <section key={catSlug} className="mb-10">
+            <section key={catSlug} className="mb-8 fade-up" style={{ animationDelay: `${i * 0.04}s` }}>
               {!filterCategory && (
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                      style={{ background: grad }}>
-                      {cat.emoji}
-                    </div>
+                <div className="section-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div className="section-icon" style={{ background: grad }}>{cat.emoji}</div>
                     <div>
-                      <h2 className="font-black text-base" style={{ color: '#1a1a2e' }}>{cat.name}</h2>
-                      <span className="section-label">{catStores.length} stores</span>
+                      <div style={{ fontWeight: 900, fontSize: 15, color: '#1a1a2e', letterSpacing: '-0.01em' }}>{cat.name}</div>
+                      <div className="section-label">{catStores.length} stores</div>
                     </div>
                   </div>
-                  <Link href={`/${citySlug}/${catSlug}`}>
-                    <span className="text-xs font-black px-3 py-1.5 rounded-full text-gray-500"
-                      style={{ background: '#e8e6e2', border: '1px solid rgba(0,0,0,0.06)' }}>
-                      See all →
-                    </span>
-                  </Link>
+                  <Link href={`/${citySlug}/${catSlug}`} className="see-all-pill">See all →</Link>
                 </div>
               )}
               {filterCategory && (
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style={{ background: grad }}>{cat.emoji}</div>
-                  <h1 className="text-xl font-black" style={{ color: '#1a1a2e' }}>{cat.name} in {city.name}</h1>
-                  <span className="text-xs font-bold px-2 py-1 rounded-full"
-                    style={{ background: '#ffe8e5', color: '#e8401c' }}>{catStores.length}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                  <div className="section-icon" style={{ background: grad }}>{cat.emoji}</div>
+                  <h1 style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.02em' }}>
+                    {cat.name} in {city.name}
+                  </h1>
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: '3px 8px',
+                    borderRadius: 99,
+                    background: '#ffe8e5',
+                    color: '#e8401c',
+                  }}>
+                    {catStores.length}
+                  </span>
                 </div>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -335,15 +401,17 @@ export default async function CityPage({ params, searchParams }: Props) {
           );
         })}
 
-        <div className="text-center pt-6 pb-8" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-          <p className="text-sm text-gray-400">
+        <div style={{ textAlign: 'center', paddingTop: 24, borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+          <p style={{ fontSize: 13, color: '#b0b0be' }}>
             {allStores.length} stores in {city.name} ·{" "}
-            <Link href="https://dashboard.localadda.com" className="font-semibold" style={{ color: '#e8401c' }}>
+            <Link href="https://dashboard.localadda.com" style={{ fontWeight: 600, color: '#e8401c' }}>
               List yours free →
             </Link>
           </p>
         </div>
       </div>
+
+      <BottomNav citySlug={citySlug} />
     </div>
   );
 }

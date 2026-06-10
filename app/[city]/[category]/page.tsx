@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getCities, getStoresByCity, groupByCategory } from "@/lib/api";
 import { StoreCard } from "@/components/StoreCard";
+import { CityHomeButton } from "@/components/CityHomeButton";
+import { BottomNav } from "@/components/BottomNav";
 
 interface Props {
   params: Promise<{ city: string; category: string }>;
@@ -60,7 +62,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 safe-bottom">
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-2xl font-black" style={{ color: '#1a1a2e' }}>{cat.emoji} {cat.name} in {city.name}</h1>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full"
@@ -79,12 +81,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           {stores.map((store) => <StoreCard key={store.id} store={store} citySlug={citySlug} />)}
         </div>
 
-        {stores.length > 0 && (
-          <div className="mt-8 text-center">
-            <Link href={`/${citySlug}`} className="text-sm font-semibold" style={{ color: '#bbb' }}>← All in {city.name}</Link>
-          </div>
-        )}
       </div>
+
+      <CityHomeButton citySlug={citySlug} cityName={city.name} />
+      <BottomNav citySlug={citySlug} />
     </div>
   );
 }
