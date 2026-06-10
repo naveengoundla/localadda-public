@@ -333,6 +333,10 @@ export default async function CityPage({ params, searchParams }: Props) {
           if (!catStores) return null;
           const cat = catStores[0].category;
           const grad = CAT_GRADIENT[catSlug] || 'linear-gradient(135deg,#667eea,#764ba2)';
+          // On the city home, cap each category at 3 cards; "See all" only when more exist
+          const PREVIEW_LIMIT = 3;
+          const visibleStores = filterCategory ? catStores : catStores.slice(0, PREVIEW_LIMIT);
+          const hasMore = !filterCategory && catStores.length > PREVIEW_LIMIT;
           return (
             <section key={catSlug} className="mb-8 fade-up" style={{ animationDelay: `${i * 0.04}s` }}>
               {!filterCategory && (
@@ -344,7 +348,9 @@ export default async function CityPage({ params, searchParams }: Props) {
                       <div className="section-label">{catStores.length} stores</div>
                     </div>
                   </div>
-                  <Link href={`/${citySlug}/${catSlug}`} className="see-all-pill">See all →</Link>
+                  {hasMore && (
+                    <Link href={`/${citySlug}/${catSlug}`} className="see-all-pill">See all {catStores.length} →</Link>
+                  )}
                 </div>
               )}
               {filterCategory && (
@@ -366,7 +372,7 @@ export default async function CityPage({ params, searchParams }: Props) {
                 </div>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {catStores.map((store) => (
+                {visibleStores.map((store) => (
                   <StoreCard key={store.id} store={store} citySlug={citySlug} />
                 ))}
               </div>
