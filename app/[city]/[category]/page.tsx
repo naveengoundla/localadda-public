@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { getCities, getStoresByCity, groupByCategory } from "@/lib/api";
 import { StoreCard } from "@/components/StoreCard";
 import { CityHomeButton } from "@/components/CityHomeButton";
-import { BottomNav } from "@/components/BottomNav";
 
 interface Props {
   params: Promise<{ city: string; category: string }>;
@@ -84,7 +83,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       </div>
 
       <CityHomeButton citySlug={citySlug} cityName={city.name} />
-      <BottomNav citySlug={citySlug} />
     </div>
   );
 }

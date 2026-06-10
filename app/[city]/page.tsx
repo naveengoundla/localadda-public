@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getCities, getStoresByCity, groupByCategory } from "@/lib/api";
 import { StoreCard } from "@/components/StoreCard";
-import { BottomNav } from "@/components/BottomNav";
 import type { Store } from "@/types";
 
 interface Props {
@@ -411,7 +410,6 @@ export default async function CityPage({ params, searchParams }: Props) {
         </div>
       </div>
 
-      <BottomNav citySlug={citySlug} />
     </div>
   );
 }
