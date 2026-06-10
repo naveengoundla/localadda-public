@@ -172,8 +172,20 @@ export default async function CityPage({ params, searchParams }: Props) {
           </form>
         </div>
 
-        {/* Category circles — NO "All" tab */}
+        {/* Category circles — Home first, then categories */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-5 flex gap-5 overflow-x-auto scrollbar-hide">
+          {/* Home icon — always first, active when no filter */}
+          <Link href={`/${citySlug}`} className="flex-shrink-0 flex flex-col items-center gap-2">
+            <div className={`cat-icon ${isDefaultView ? 'active' : ''}`}
+              style={{ background: isDefaultView ? 'linear-gradient(135deg,#f5a623,#e8401c)' : 'rgba(255,255,255,0.12)', fontSize: 24 }}>
+              🏠
+            </div>
+            <span className="text-xs font-bold text-center"
+              style={{ color: isDefaultView ? '#fff' : 'rgba(255,255,255,0.5)', width: 60 }}>
+              Home
+            </span>
+          </Link>
+
           {uniqueCategories.map((cat) => {
             const active = filterCategory === cat.slug;
             return (
