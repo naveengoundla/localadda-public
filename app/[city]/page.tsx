@@ -211,7 +211,7 @@ export default async function CityPage({ params, searchParams }: Props) {
       </header>
 
       {/* ── Content ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 safe-bottom">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
 
         {/* ── Default view ── */}
         {isDefaultView && (

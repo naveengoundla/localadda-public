@@ -61,7 +61,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 safe-bottom">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-2xl font-black" style={{ color: '#1a1a2e' }}>{cat.emoji} {cat.name} in {city.name}</h1>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full"

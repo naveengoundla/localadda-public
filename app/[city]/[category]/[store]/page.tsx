@@ -83,7 +83,7 @@ export default async function StorePage({ params }: Props) {
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: gradient }} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 safe-bottom">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="lg:grid lg:grid-cols-3 lg:gap-7">
 
           {/* ── Left ── */}

@@ -10,14 +10,11 @@ interface Props {
 export function CityHomeButton({ citySlug, cityName }: Props) {
   return (
     <div style={{
-      position: 'fixed',
-      bottom: 'max(80px, calc(68px + env(safe-area-inset-bottom)))',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 50,
-      pointerEvents: 'none',
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '8px 16px 28px',
     }}>
-      <Link href={`/${citySlug}`} className="city-home-pill" style={{ pointerEvents: 'auto' }}>
+      <Link href={`/${citySlug}`} className="city-home-pill">
         <span style={{ fontSize: 16 }}>🏠</span>
         <span>{cityName}</span>
         <span style={{ color: '#f5a623', fontSize: 11, fontWeight: 700 }}>· Offers & Places</span>
