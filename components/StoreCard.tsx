@@ -1,9 +1,9 @@
 'use client';
 
 import Link from "next/link";
-import Image from "next/image";
 import type { Store } from "@/types";
 import { getMapsUrl } from "@/lib/maps";
+import { StoreImage } from "@/components/StoreImage";
 
 const CAT_GRADIENT: Record<string, string> = {
   grocery:    'linear-gradient(135deg,#11998e,#38ef7d)',
@@ -34,28 +34,12 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
         flexShrink: 0,
         display: 'block',
       }}>
-        {store.bannerUrl ? (
-          <Image
-            src={store.bannerUrl}
-            alt={store.name}
-            fill
-            className="object-cover"
-            sizes="108px"
-          />
-        ) : (
-          <div style={{
-            width: '100%',
-            height: '100%',
-            minHeight: 108,
-            background: gradient,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 30,
-          }}>
-            {store.category.emoji}
-          </div>
-        )}
+        <StoreImage
+          src={store.bannerUrl}
+          alt={store.name}
+          emoji={store.category.emoji}
+          gradient={gradient}
+        />
 
         {/* Discount badge on image */}
         {activeDiscount?.valueLabel && (

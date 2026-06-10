@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getStore } from "@/lib/api";
 import { getMapsUrl } from "@/lib/maps";
 import { CityHomeButton } from "@/components/CityHomeButton";
+import { StoreImage } from "@/components/StoreImage";
 
 interface Props {
   params: Promise<{ city: string; category: string; store: string }>;
@@ -62,9 +63,14 @@ export default async function StorePage({ params }: Props) {
 
       {/* Banner */}
       <div className="relative w-full" style={{ height: 220 }}>
-        {store.bannerUrl
-          ? <Image src={store.bannerUrl} alt={store.name} fill className="object-cover" sizes="100vw" />
-          : <div className="w-full h-full" style={{ background: gradient }} />}
+        <StoreImage
+          src={store.bannerUrl}
+          alt={store.name}
+          emoji={store.category.emoji}
+          gradient={gradient}
+          sizes="100vw"
+          emojiSize={56}
+        />
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.15) 60%,transparent 100%)' }} />
         <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 pb-4">
