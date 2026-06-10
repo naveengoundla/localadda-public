@@ -327,8 +327,8 @@ export default async function CityPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {/* Category sections */}
-        {displayCategories.map((catSlug, i) => {
+        {/* Category sections — hidden on the default home view (deals only there) */}
+        {!isDefaultView && displayCategories.map((catSlug, i) => {
           const catStores = grouped[catSlug];
           if (!catStores) return null;
           const cat = catStores[0].category;
