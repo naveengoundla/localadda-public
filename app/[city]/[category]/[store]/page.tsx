@@ -6,6 +6,7 @@ import { getStore } from "@/lib/api";
 import { getMapsUrl } from "@/lib/maps";
 import { CityHomeButton } from "@/components/CityHomeButton";
 import { StoreImage } from "@/components/StoreImage";
+import { ProductList } from "@/components/ProductList";
 
 interface Props {
   params: Promise<{ city: string; category: string; store: string }>;
@@ -114,23 +115,7 @@ export default async function StorePage({ params }: Props) {
             {allItems.length > 0 && (
               <div style={card}>
                 <h2 className="font-black text-lg mb-4" style={{ color: '#1a1a2e' }}>📦 Products & Prices</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-                  {allItems.map((item) => (
-                    <div key={item.id} className="flex items-center gap-3 py-2.5"
-                      style={{ borderBottom: '1px solid #f5f5f5' }}>
-                      {item.imageUrl
-                        ? <div className="relative w-11 h-11 flex-shrink-0"><Image src={item.imageUrl} alt={item.name} fill className="object-cover rounded-xl" /></div>
-                        : <div className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center text-xl" style={{ background: '#f4f2ee' }}>{store.category.emoji}</div>}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm truncate" style={{ color: '#1a1a2e' }}>
-                          {item.name}{item.isFeatured && <span className="ml-1 text-xs" style={{ color: '#f5a623' }}>★</span>}
-                        </div>
-                        {item.unit && <div className="text-xs" style={{ color: '#aaa' }}>per {item.unit}</div>}
-                      </div>
-                      <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
-                    </div>
-                  ))}
-                </div>
+                <ProductList items={allItems} categoryEmoji={store.category.emoji} />
               </div>
             )}
 
