@@ -183,27 +183,15 @@ export default async function CityPage({ params, searchParams }: Props) {
           </form>
         </div>
 
-        {/* Category circles */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-5 flex gap-5 overflow-x-auto scrollbar-hide">
-          {/* Home circle — always first */}
-          <Link href={`/${citySlug}`} className="flex-shrink-0 flex flex-col items-center gap-2">
-            <div
-              className={`cat-icon ${isDefaultView ? 'active' : ''}`}
-              style={{
-                background: isDefaultView
-                  ? 'linear-gradient(135deg,#f5a623,#e8401c)'
-                  : 'rgba(255,255,255,0.1)',
-                fontSize: 22,
-              }}
-            >
-              🏠
-            </div>
-            <span className="text-xs font-bold text-center" style={{
-              color: isDefaultView ? '#fff' : 'rgba(255,255,255,0.45)',
-              width: 56,
-            }}>
-              Home
-            </span>
+        {/* Category pill tabs */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+          {/* Home pill — always first */}
+          <Link
+            href={`/${citySlug}`}
+            className="nav-pill flex-shrink-0"
+            data-active={isDefaultView ? 'true' : 'false'}
+          >
+            🏠 Home
           </Link>
 
           {uniqueCategories.map((cat) => {
@@ -212,24 +200,10 @@ export default async function CityPage({ params, searchParams }: Props) {
               <Link
                 key={cat.slug}
                 href={active ? `/${citySlug}` : `/${citySlug}?category=${cat.slug}${searchQuery ? `&q=${searchQuery}` : ''}`}
-                className="flex-shrink-0 flex flex-col items-center gap-2"
+                className="nav-pill flex-shrink-0"
+                data-active={active ? 'true' : 'false'}
               >
-                <div
-                  className={`cat-icon ${active ? 'active' : ''}`}
-                  style={{
-                    background: active
-                      ? (CAT_GRADIENT[cat.slug] || 'rgba(255,255,255,0.15)')
-                      : 'rgba(255,255,255,0.1)',
-                  }}
-                >
-                  {cat.emoji}
-                </div>
-                <span className="text-xs font-bold text-center" style={{
-                  color: active ? '#fff' : 'rgba(255,255,255,0.45)',
-                  width: 56,
-                }}>
-                  {cat.name.split(' ')[0]}
-                </span>
+                {cat.emoji} {cat.name.split(' ')[0]}
               </Link>
             );
           })}

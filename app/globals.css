@@ -98,6 +98,33 @@ body {
 .btn-glow-blue:hover  { box-shadow: 0 4px 14px rgba(52,152,219,0.42); transform: translateY(-1px); }
 .btn-glow-blue:active { transform: scale(0.95); }
 
+/* ── Category nav pills ── */
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  white-space: nowrap;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.08);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.nav-pill[data-active='true'] {
+  background: #ffffff;
+  color: #1a1a2e;
+  border-color: #ffffff;
+}
+.nav-pill:not([data-active='true']):hover {
+  background: rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.85);
+}
+
 /* ── Category icon circle ── */
 .cat-icon {
   width: 54px;
