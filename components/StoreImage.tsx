@@ -10,11 +10,12 @@ interface Props {
   gradient: string;
   sizes?: string;
   emojiSize?: number;
+  quality?: number;
 }
 
 /** Image with graceful fallback — if src is missing OR fails to load,
  *  shows the category gradient + emoji instead of a broken-image icon. */
-export function StoreImage({ src, alt, emoji, gradient, sizes = "108px", emojiSize = 30 }: Props) {
+export function StoreImage({ src, alt, emoji, gradient, sizes = "108px", emojiSize = 30, quality = 75 }: Props) {
   const [failed, setFailed] = useState(false);
 
   if (!src || failed) {
@@ -40,6 +41,7 @@ export function StoreImage({ src, alt, emoji, gradient, sizes = "108px", emojiSi
       fill
       className="object-cover"
       sizes={sizes}
+      quality={quality}
       onError={() => setFailed(true)}
     />
   );

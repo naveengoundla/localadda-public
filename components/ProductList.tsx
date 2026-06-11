@@ -138,6 +138,7 @@ export function ProductList({ items, categoryEmoji }: Props) {
               fill
               className="object-contain"
               sizes="100vw"
+              quality={85}
               priority
             />
           </div>

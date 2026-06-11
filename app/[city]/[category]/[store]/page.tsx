@@ -71,6 +71,7 @@ export default async function StorePage({ params }: Props) {
           gradient={gradient}
           sizes="100vw"
           emojiSize={56}
+          quality={85}
         />
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.15) 60%,transparent 100%)' }} />
