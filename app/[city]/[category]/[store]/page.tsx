@@ -116,7 +116,15 @@ export default async function StorePage({ params }: Props) {
             {allItems.length > 0 && (
               <div style={card}>
                 <h2 className="font-black text-lg mb-4" style={{ color: '#1a1a2e' }}>📦 Products & Prices</h2>
-                <ProductList items={allItems} categoryEmoji={store.category.emoji} />
+                <ProductList
+                  items={allItems}
+                  categoryEmoji={store.category.emoji}
+                  ordering={store.orderingEnabled && store.phone ? {
+                    storeSlug: store.slug,
+                    storeName: store.name,
+                    storePhone: store.phone,
+                  } : null}
+                />
               </div>
             )}
 

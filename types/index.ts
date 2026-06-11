@@ -43,6 +43,7 @@ export interface Store {
   galleryUrls: string[];
   hours: Record<string, string> | null;
   isActive: boolean;
+  orderingEnabled?: boolean;
   city: City;
   items: StoreItem[];
   discounts: StoreDiscount[];

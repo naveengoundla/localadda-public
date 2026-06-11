@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import type { StoreItem } from "@/types";
+import { OrderBar, useCart, type OrderingInfo } from "@/components/OrderBar";
 
 interface Props {
   items: StoreItem[];
   categoryEmoji: string;
+  ordering?: OrderingInfo | null;
 }
 
-export function ProductList({ items, categoryEmoji }: Props) {
+export function ProductList({ items, categoryEmoji, ordering }: Props) {
+  const { cart, update, clear } = useCart(ordering?.storeSlug ?? '');
   // Only items with an image participate in the gallery
   const galleryItems = items.filter((i) => i.imageUrl);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -68,11 +71,40 @@ export function ProductList({ items, categoryEmoji }: Props) {
                 </div>
                 {item.unit && <div className="text-xs" style={{ color: '#aaa' }}>per {item.unit}</div>}
               </div>
-              <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
+                {ordering && (
+                  (cart[item.id] || 0) === 0 ? (
+                    <button
+                      onClick={() => update(item.id, 1)}
+                      style={{
+                        fontSize: 11.5, fontWeight: 800, padding: '4px 14px',
+                        borderRadius: 8, border: '1.5px solid #1db954',
+                        background: '#fff', color: '#17a44b', cursor: 'pointer',
+                      }}
+                    >
+                      + ADD
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button onClick={() => update(item.id, -1)}
+                        style={{ width: 24, height: 24, borderRadius: 7, border: '1.5px solid #e0e0e0', background: '#fff', fontWeight: 800, cursor: 'pointer', lineHeight: 1 }}>−</button>
+                      <span style={{ fontWeight: 800, fontSize: 13, minWidth: 14, textAlign: 'center' }}>{cart[item.id]}</span>
+                      <button onClick={() => update(item.id, 1)}
+                        style={{ width: 24, height: 24, borderRadius: 7, border: 'none', background: '#1db954', color: '#fff', fontWeight: 800, cursor: 'pointer', lineHeight: 1 }}>+</button>
+                    </div>
+                  )
+                )}
+              </div>
             </div>
           );
         })}
       </div>
+
+      {/* ── Cart bar + checkout (pilot stores only) ── */}
+      {ordering && (
+        <OrderBar items={items} ordering={ordering} cart={cart} updateCart={update} clearCart={clear} />
+      )}
 
       {/* ── Lightbox ── */}
       {current && openIndex !== null && (
