@@ -113,12 +113,27 @@ export default async function StorePage({ params }: Props) {
               </div>
             )}
 
+            {/* Vegetables: fresh-rates banner */}
+            {store.category.slug === 'vegetables' && allItems.length > 0 && (
+              <div className="rounded-2xl px-4 py-3 flex items-center gap-2"
+                style={{ background: 'linear-gradient(135deg,#56ab2f,#a8e063)' }}>
+                <span style={{ fontSize: 18 }}>🥦</span>
+                <span className="text-sm font-black text-white">Fresh rates — updated daily</span>
+              </div>
+            )}
+
             {allItems.length > 0 && (
               <div style={card}>
-                <h2 className="font-black text-lg mb-4" style={{ color: '#1a1a2e' }}>📦 Products & Prices</h2>
+                <h2 className="font-black text-lg mb-4" style={{ color: '#1a1a2e' }}>
+                  {store.category.slug === 'vegetables' ? "🥬 Today's Rates"
+                    : store.category.slug === 'optical' ? '👓 Our Collection'
+                    : store.category.slug === 'clothing' ? '👗 Collection'
+                    : '📦 Products & Prices'}
+                </h2>
                 <ProductList
                   items={allItems}
                   categoryEmoji={store.category.emoji}
+                  schema={store.category.itemSchema}
                   ordering={store.orderingEnabled && store.phone ? {
                     storeSlug: store.slug,
                     storeName: store.name,
@@ -159,6 +174,17 @@ export default async function StorePage({ params }: Props) {
                 </a>
               )}
             </div>
+
+            {/* Optical: book an eye test */}
+            {store.category.slug === 'optical' && store.phone && (
+              <a
+                href={`https://wa.me/${store.phone.replace(/[^0-9]/g, '').replace(/^(?!91)/, '91')}?text=${encodeURIComponent(`Hi ${store.name}, I'd like to book an eye test.`)}`}
+                target="_blank" rel="noreferrer"
+                className="block py-4 rounded-2xl text-center font-black text-white text-base"
+                style={{ background: 'linear-gradient(135deg,#36d1dc,#5b86e5)', boxShadow: '0 6px 20px rgba(91,134,229,0.35)' }}>
+                📅 Book an eye test
+              </a>
+            )}
 
             <div style={card}>
               <h2 className="font-black mb-3" style={{ color: '#1a1a2e' }}>Contact & Location</h2>

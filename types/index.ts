@@ -5,10 +5,18 @@ export interface City {
   state: string;
 }
 
+export interface CategoryField {
+  key: string;
+  label: string;
+  type: 'text' | 'select' | 'tags' | 'bool';
+  options?: string[];
+}
+
 export interface Category {
   slug: string;
   name: string;
   emoji: string;
+  itemSchema?: CategoryField[];
 }
 
 export interface StoreItem {
@@ -18,6 +26,7 @@ export interface StoreItem {
   unit: string | null;
   imageUrl: string | null;
   isFeatured: boolean;
+  attributes?: Record<string, unknown> | null;
 }
 
 export interface StoreDiscount {

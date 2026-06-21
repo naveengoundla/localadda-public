@@ -2,16 +2,50 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import type { StoreItem } from "@/types";
+import type { StoreItem, CategoryField } from "@/types";
 import { OrderBar, useCart, type OrderingInfo } from "@/components/OrderBar";
 
 interface Props {
   items: StoreItem[];
   categoryEmoji: string;
   ordering?: OrderingInfo | null;
+  schema?: CategoryField[];
 }
 
-export function ProductList({ items, categoryEmoji, ordering }: Props) {
+// Render an item's category attributes as compact chips, ordered by the schema.
+function attrChips(item: StoreItem, schema?: CategoryField[]) {
+  const attrs = item.attributes;
+  if (!schema || !attrs) return null;
+  const chips: { text: string; tone: 'bool' | 'plain' }[] = [];
+  for (const f of schema) {
+    const v = attrs[f.key];
+    if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) continue;
+    if (f.type === 'bool') {
+      if (v === true) chips.push({ text: f.label, tone: 'bool' });
+    } else if (Array.isArray(v)) {
+      for (const item of v) chips.push({ text: String(item), tone: 'plain' });
+    } else {
+      chips.push({ text: String(v), tone: 'plain' });
+    }
+  }
+  if (chips.length === 0) return null;
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+      {chips.map((c, i) => (
+        <span key={i} style={{
+          fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 6, lineHeight: 1.5,
+          background: c.tone === 'bool' ? '#edfbf1' : '#f1efe9',
+          color: c.tone === 'bool' ? '#17a44b' : '#7a766c',
+          border: c.tone === 'bool' ? '1px solid rgba(29,185,84,0.18)' : '1px solid rgba(0,0,0,0.04)',
+        }}>
+          {c.text}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function ProductList({ items, categoryEmoji, ordering, schema }: Props) {
   const { cart, update, clear } = useCart(ordering?.storeSlug ?? '');
   // Preorder mode is opt-in: catalog stays clean until the user taps "Start Preorder".
   const [preorderMode, setPreorderMode] = useState(false);
@@ -119,6 +153,7 @@ export function ProductList({ items, categoryEmoji, ordering }: Props) {
                   {item.name}{item.isFeatured && <span className="ml-1 text-xs" style={{ color: '#f5a623' }}>★</span>}
                 </div>
                 {item.unit && <div className="text-xs" style={{ color: '#aaa' }}>per {item.unit}</div>}
+                {attrChips(item, schema)}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                 <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
