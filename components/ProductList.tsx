@@ -77,6 +77,7 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
   const filterableFields = (schema ?? []).filter((f) => f.filterable);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(''); // '' = All
   const activeCount = Object.values(filters).reduce((a, v) => a + v.length, 0);
   const filterSig = JSON.stringify(filters);
 
@@ -146,6 +147,8 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
       .map(([name, its]) => ({ name, items: its }))
       .sort((a, b) => rank(a.name) - rank(b.name));
   })();
+  // Active section tab ('' = All); fall back to All if it no longer exists.
+  const effectiveSection = groups.some((g) => g.name === activeSection) ? activeSection : '';
 
   // ── Lightbox (over all images, not just visible) ──
   const galleryItems = items.filter((i) => i.imageUrl);
@@ -343,34 +346,39 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         <p style={{ fontSize: 13.5, color: '#aaa', padding: '12px 0' }}>No items match “{query}”.</p>
       )}
 
-      {/* ── Section chip-nav (grouped, 2+ sections) ── */}
+      {/* ── Section tabs (filter to one section; All shows everything) ── */}
       {isGrouped && groups.length > 1 && (
         <div className="scrollbar-hide" style={{ display: 'flex', gap: 7, overflowX: 'auto', marginBottom: 12, paddingBottom: 2 }}>
-          {groups.map((g) => (
-            <a key={g.name} href={`#sec-${g.name.replace(/\W+/g, '-')}`} onClick={(e) => {
-              e.preventDefault();
-              document.getElementById(`sec-${g.name.replace(/\W+/g, '-')}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-              style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, padding: '5px 12px', borderRadius: 99, whiteSpace: 'nowrap', textDecoration: 'none', border: '1px solid #e0ddd5', color: '#666', background: '#fff' }}>
-              {g.name}
-            </a>
-          ))}
+          {[{ name: '', label: 'All' }, ...groups.map((g) => ({ name: g.name, label: g.name }))].map((t) => {
+            const on = effectiveSection === t.name;
+            return (
+              <button key={t.name || 'all'} onClick={() => setActiveSection(t.name)}
+                style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, padding: '5px 13px', borderRadius: 99, whiteSpace: 'nowrap', cursor: 'pointer',
+                  border: on ? '1px solid #1a1a2e' : '1px solid #e0ddd5', background: on ? '#1a1a2e' : '#fff', color: on ? '#fff' : '#666' }}>
+                {t.label}
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* ── Flat (ungrouped) ── */}
       {!isGrouped && filtered.length > 0 && renderItems(visible)}
 
-      {/* ── Grouped sections ── */}
-      {isGrouped && groups.map((g) => (
-        <section key={g.name} id={`sec-${g.name.replace(/\W+/g, '-')}`} style={{ marginBottom: 18, scrollMarginTop: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '4px 0 8px', paddingBottom: 6, borderBottom: '2px solid #f0ede7' }}>
-            <h3 style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.01em' }}>{g.name}</h3>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#bbb' }}>{g.items.length}</span>
-          </div>
-          {renderItems(g.items)}
-        </section>
-      ))}
+      {/* ── Grouped: a single selected section, or all sections stacked ── */}
+      {isGrouped && (
+        effectiveSection
+          ? renderItems(groups.find((g) => g.name === effectiveSection)?.items ?? [])
+          : groups.map((g) => (
+              <section key={g.name} style={{ marginBottom: 18 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '4px 0 8px', paddingBottom: 6, borderBottom: '2px solid #f0ede7' }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.01em' }}>{g.name}</h3>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#bbb' }}>{g.items.length}</span>
+                </div>
+                {renderItems(g.items)}
+              </section>
+            ))
+      )}
 
       {/* ── Show more (flat only) ── */}
       {!isGrouped && filtered.length > shown && (
