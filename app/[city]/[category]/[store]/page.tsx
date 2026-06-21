@@ -119,14 +119,6 @@ export default async function StorePage({ params }: Props) {
 
             {allItems.length > 0 && (
               <div style={card}>
-                <h2 className="font-black text-lg mb-4" style={{ color: '#1a1a2e' }}>
-                  {store.category.slug === 'vegetables' ? "🥬 Today's Rates"
-                    : store.category.slug === 'optical' ? '👓 Our Collection'
-                    : store.category.slug === 'clothing' ? '👗 Collection'
-                    : store.category.slug === 'restaurant' ? '🍽️ Menu'
-                    : store.category.slug === 'mobile' ? '📱 Phones & Accessories'
-                    : '📦 Products & Prices'}
-                </h2>
                 <ProductList
                   items={allItems}
                   categoryEmoji={store.category.emoji}

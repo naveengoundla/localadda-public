@@ -280,8 +280,19 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
       : <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">{list.map(listRow)}</div>
   );
 
+  const total = items.length;
+  const filteredOut = filtered.length !== total;
+
   return (
     <>
+      {/* ── Slim label / count ── */}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
+        {isRestaurant && <span style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e' }}>🍽️ Menu</span>}
+        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#9898a8' }}>
+          {filteredOut ? `${filtered.length} of ${total} items` : `${total} item${total === 1 ? '' : 's'}`}
+        </span>
+      </div>
+
       {/* ── Preorder entry / status banner ── */}
       {ordering && (
         preorderMode ? (
