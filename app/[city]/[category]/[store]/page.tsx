@@ -137,6 +137,7 @@ export default async function StorePage({ params }: Props) {
                   categoryEmoji={store.category.emoji}
                   schema={store.category.itemSchema}
                   categorySlug={store.category.slug}
+                  layout={store.category.layout}
                   ordering={store.orderingEnabled && store.phone ? {
                     storeSlug: store.slug,
                     storeName: store.name,
