@@ -32,7 +32,7 @@ function attrChips(item: StoreItem, schema?: CategoryField[], categorySlug?: str
   if (!schema || !attrs) return null;
   const chips: { text: string; tone: 'bool' | 'plain' }[] = [];
   for (const f of schema) {
-    if (categorySlug === 'restaurant' && f.key === 'foodType') continue;
+    if (categorySlug === 'restaurant' && (f.key === 'foodType' || f.key === 'course')) continue;
     const v = attrs[f.key];
     if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) continue;
     if (f.type === 'bool') {
@@ -62,6 +62,7 @@ function attrChips(item: StoreItem, schema?: CategoryField[], categorySlug?: str
 
 export function ProductList({ items, categoryEmoji, ordering, schema, categorySlug, layout = 'list' }: Props) {
   const isGrid = layout === 'grid';
+  const isMenu = layout === 'menu';
   const { cart, update, clear } = useCart(ordering?.storeSlug ?? '');
   const [preorderMode, setPreorderMode] = useState(false);
 
@@ -81,8 +82,29 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
     const q = query.trim().toLowerCase();
     filtered = filtered.filter((i) => i.name.toLowerCase().includes(q));
   }
-  const visible = filtered.slice(0, shown);
+  // Menu shows all (grouped); list/grid lazy-load.
+  const visible = isMenu ? filtered : filtered.slice(0, shown);
   const showSearch = items.length >= 8;
+
+  // Menu grouping by the "course" attribute, ordered by the schema's option list.
+  const courseField = schema?.find((f) => f.key === 'course');
+  const courseOrder = courseField?.options ?? [];
+  const menuGroups: { name: string; items: StoreItem[] }[] = (() => {
+    if (!isMenu) return [];
+    const map = new Map<string, StoreItem[]>();
+    for (const it of filtered) {
+      const c = (it.attributes?.course as string) || 'More';
+      if (!map.has(c)) map.set(c, []);
+      map.get(c)!.push(it);
+    }
+    const rank = (n: string) => {
+      const i = courseOrder.indexOf(n);
+      return i === -1 ? 999 : i;
+    };
+    return Array.from(map.entries())
+      .map(([name, its]) => ({ name, items: its }))
+      .sort((a, b) => rank(a.name) - rank(b.name));
+  })();
 
   // ── Lightbox (over all images, not just visible) ──
   const galleryItems = items.filter((i) => i.imageUrl);
@@ -141,6 +163,35 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
       </div>
     )
   );
+
+  // Shared list/menu row
+  const listRow = (item: StoreItem) => {
+    const foodType = isRestaurant ? (item.attributes?.foodType as string | undefined) : undefined;
+    return (
+      <div key={item.id} className="flex items-center gap-3 py-2.5" style={{ borderBottom: '1px solid #f5f5f5' }}>
+        {item.imageUrl ? (
+          <button onClick={() => openLightbox(item)} className="relative w-11 h-11 flex-shrink-0 cursor-zoom-in" style={{ border: 'none', padding: 0, background: 'none' }} aria-label={`View ${item.name} image`}>
+            <Image src={item.imageUrl} alt={item.name} fill className="object-cover rounded-xl" sizes="44px" />
+          </button>
+        ) : (
+          <div className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center text-xl" style={{ background: '#f4f2ee' }}>{categoryEmoji}</div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-sm flex items-center gap-1.5" style={{ color: '#1a1a2e' }}>
+            {foodType && <FoodMark type={foodType} />}
+            <span className="truncate">{item.name}</span>
+            {item.isFeatured && <span className="text-xs" style={{ color: '#f5a623' }}>★</span>}
+          </div>
+          {item.unit && <div className="text-xs" style={{ color: '#aaa' }}>per {item.unit}</div>}
+          {attrChips(item, schema, categorySlug)}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+          <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
+          {showSteppers && <Stepper id={item.id} />}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -218,40 +269,31 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
       )}
 
       {/* ── LIST layout ── */}
-      {!isGrid && filtered.length > 0 && (
+      {layout === 'list' && filtered.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-          {visible.map((item) => {
-            const foodType = isRestaurant ? (item.attributes?.foodType as string | undefined) : undefined;
-            return (
-              <div key={item.id} className="flex items-center gap-3 py-2.5" style={{ borderBottom: '1px solid #f5f5f5' }}>
-                {item.imageUrl ? (
-                  <button onClick={() => openLightbox(item)} className="relative w-11 h-11 flex-shrink-0 cursor-zoom-in" style={{ border: 'none', padding: 0, background: 'none' }} aria-label={`View ${item.name} image`}>
-                    <Image src={item.imageUrl} alt={item.name} fill className="object-cover rounded-xl" sizes="44px" />
-                  </button>
-                ) : (
-                  <div className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center text-xl" style={{ background: '#f4f2ee' }}>{categoryEmoji}</div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm flex items-center gap-1.5" style={{ color: '#1a1a2e' }}>
-                    {foodType && <FoodMark type={foodType} />}
-                    <span className="truncate">{item.name}</span>
-                    {item.isFeatured && <span className="text-xs" style={{ color: '#f5a623' }}>★</span>}
-                  </div>
-                  {item.unit && <div className="text-xs" style={{ color: '#aaa' }}>per {item.unit}</div>}
-                  {attrChips(item, schema, categorySlug)}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                  <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
-                  {showSteppers && <Stepper id={item.id} />}
-                </div>
-              </div>
-            );
-          })}
+          {visible.map((item) => listRow(item))}
         </div>
       )}
 
-      {/* ── Show more ── */}
-      {filtered.length > shown && (
+      {/* ── MENU layout (grouped by section) ── */}
+      {isMenu && menuGroups.length > 0 && (
+        <div>
+          {menuGroups.map((g) => (
+            <section key={g.name} style={{ marginBottom: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '4px 0 6px', paddingBottom: 6, borderBottom: '2px solid #f0ede7' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.01em' }}>{g.name}</h3>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#bbb' }}>{g.items.length}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+                {g.items.map((item) => listRow(item))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+
+      {/* ── Show more (list/grid only) ── */}
+      {!isMenu && filtered.length > shown && (
         <button
           onClick={() => setShown((s) => s + INITIAL)}
           style={{ width: '100%', marginTop: 14, padding: '11px', borderRadius: 10, border: '1px solid #e6e1d8', background: '#fff', color: '#17a44b', fontWeight: 800, fontSize: 13.5, cursor: 'pointer', fontFamily: 'inherit' }}
