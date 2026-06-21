@@ -280,29 +280,21 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
       : <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">{list.map(listRow)}</div>
   );
 
-  const total = items.length;
-  const filteredOut = filtered.length !== total;
-
   return (
     <>
-      {/* ── Slim label / count ── */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-        {isRestaurant && <span style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e' }}>🍽️ Menu</span>}
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#9898a8' }}>
-          {filteredOut ? `${filtered.length} of ${total} items` : `${total} item${total === 1 ? '' : 's'}`}
-        </span>
-      </div>
+      {/* ── Restaurant menu label ── */}
+      {isRestaurant && (
+        <div style={{ marginBottom: 10 }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e' }}>🍽️ Menu</span>
+        </div>
+      )}
 
-      {/* ── Preorder entry / status banner ── */}
-      {ordering && (
-        preorderMode ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: '#edfbf1', border: '1px solid rgba(29,185,84,0.2)', borderRadius: 12, padding: '10px 14px', marginBottom: 14 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#17a44b' }}>📋 Preorder mode — tap <span style={{ fontWeight: 900 }}>+ ADD</span> on items</div>
-            <button onClick={() => setPreorderMode(false)} style={{ fontSize: 12.5, fontWeight: 700, color: '#888', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Cancel</button>
-          </div>
-        ) : (
-          <button onClick={() => setPreorderMode(true)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'linear-gradient(135deg,#1db954,#17a44b)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px', marginBottom: 16, fontWeight: 800, fontSize: 14.5, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 14px rgba(29,185,84,0.3)' }}>🛒 Start Preorder</button>
-        )
+      {/* ── Preorder mode hint (only while active) ── */}
+      {ordering && preorderMode && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: '#edfbf1', border: '1px solid rgba(29,185,84,0.2)', borderRadius: 12, padding: '8px 14px', marginBottom: 12 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#17a44b' }}>📋 Tap <span style={{ fontWeight: 900 }}>+ ADD</span> on items to preorder</div>
+          <button onClick={() => setPreorderMode(false)} style={{ fontSize: 12.5, fontWeight: 700, color: '#888', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Cancel</button>
+        </div>
       )}
 
       {/* ── In-store search ── */}
@@ -388,6 +380,16 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         >
           Show {Math.min(INITIAL, filtered.length - shown)} more · {filtered.length - shown} left ↓
         </button>
+      )}
+
+      {/* ── Small preorder entry (bottom) ── */}
+      {ordering && !preorderMode && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+          <button onClick={() => setPreorderMode(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', color: '#17a44b', border: '1.5px solid #1db954', borderRadius: 99, padding: '7px 16px', fontWeight: 800, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+            🛒 Start Preorder
+          </button>
+        </div>
       )}
 
       {/* ── Filter sheet ── */}
