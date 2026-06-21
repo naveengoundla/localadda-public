@@ -382,14 +382,12 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         </button>
       )}
 
-      {/* ── Small preorder entry (bottom) ── */}
+      {/* ── Floating preorder pill ── */}
       {ordering && !preorderMode && (
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
-          <button onClick={() => setPreorderMode(true)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', color: '#17a44b', border: '1.5px solid #1db954', borderRadius: 99, padding: '7px 16px', fontWeight: 800, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
-            🛒 Start Preorder
-          </button>
-        </div>
+        <button onClick={() => setPreorderMode(true)}
+          style={{ position: 'fixed', right: 16, bottom: 'max(20px, env(safe-area-inset-bottom))', zIndex: 90, display: 'inline-flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg,#1db954,#17a44b)', color: '#fff', border: 'none', borderRadius: 99, padding: '12px 20px', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 6px 20px rgba(29,185,84,0.4)' }}>
+          🛒 Preorder
+        </button>
       )}
 
       {/* ── Filter sheet ── */}
