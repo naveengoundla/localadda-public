@@ -205,6 +205,19 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
     )
   );
 
+  // Price with optional struck MRP + % off
+  const Price = ({ item, size = 16, align = 'flex-end' }: { item: StoreItem; size?: number; align?: string }) => {
+    const disc = item.mrp != null && Number(item.mrp) > Number(item.price);
+    const pct = disc ? Math.round((1 - Number(item.price) / Number(item.mrp)) * 100) : 0;
+    return (
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, flexWrap: 'wrap', justifyContent: align }}>
+        <span style={{ fontWeight: 900, fontSize: size, color: '#e8401c' }}>₹{item.price}</span>
+        {disc && <span style={{ fontSize: 11, color: '#aaa', textDecoration: 'line-through' }}>₹{item.mrp}</span>}
+        {disc && <span style={{ fontSize: 9.5, fontWeight: 800, color: '#17a44b', background: '#edfbf1', padding: '1px 5px', borderRadius: 5 }}>{pct}% off</span>}
+      </div>
+    );
+  };
+
   // Shared list/menu row
   const listRow = (item: StoreItem) => {
     const foodType = isRestaurant ? (item.attributes?.foodType as string | undefined) : undefined;
@@ -227,7 +240,7 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
           {attrChips(item, schema, categorySlug, groupKey)}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
+          <Price item={item} />
           {showSteppers && <Stepper id={item.id} />}
         </div>
       </div>
@@ -254,7 +267,7 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         {attrChips(item, schema, categorySlug, groupKey)}
         <div style={{ flex: 1 }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, gap: 6 }}>
-          <span style={{ fontWeight: 900, fontSize: 14, color: '#e8401c' }}>₹{item.price}</span>
+          <Price item={item} size={14} align="flex-start" />
           {showSteppers && <Stepper id={item.id} />}
         </div>
       </div>

@@ -7,6 +7,7 @@ import { getMapsUrl } from "@/lib/maps";
 import { CityHomeButton } from "@/components/CityHomeButton";
 import { StoreImage } from "@/components/StoreImage";
 import { ProductList } from "@/components/ProductList";
+import { ExpandableText } from "@/components/ExpandableText";
 
 interface Props {
   params: Promise<{ city: string; category: string; store: string }>;
@@ -63,14 +64,14 @@ export default async function StorePage({ params }: Props) {
       </header>
 
       {/* Banner */}
-      <div className="relative w-full" style={{ height: 220 }}>
+      <div className="relative w-full" style={{ height: 168 }}>
         <StoreImage
           src={store.bannerUrl}
           alt={store.name}
           emoji={store.category.emoji}
           gradient={gradient}
           sizes="100vw"
-          emojiSize={56}
+          emojiSize={48}
           quality={85}
         />
         <div className="absolute inset-0"
@@ -85,22 +86,22 @@ export default async function StorePage({ params }: Props) {
         <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: gradient }} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="lg:grid lg:grid-cols-3 lg:gap-7">
 
           {/* ── Left ── */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-3">
 
             {activeDiscount && (
-              <div className="rounded-2xl p-4 flex items-center justify-between gap-3"
+              <div className="rounded-xl px-4 py-2.5 flex items-center justify-between gap-3"
                 style={{ background: 'linear-gradient(135deg,#e8401c,#f5a623)' }}>
-                <div>
-                  <div className="font-black text-base text-white">🎉 {activeDiscount.title}</div>
-                  {activeDiscount.description && <div className="text-sm text-white/80 mt-0.5">{activeDiscount.description}</div>}
+                <div className="min-w-0 flex items-center gap-2">
+                  <span>🎉</span>
+                  <span className="font-black text-sm text-white truncate">{activeDiscount.title}</span>
                 </div>
                 {activeDiscount.valueLabel && (
-                  <span className="text-white font-black text-sm px-3 py-1.5 rounded-full whitespace-nowrap"
-                    style={{ background: 'rgba(255,255,255,0.2)' }}>
+                  <span className="text-white font-black text-xs px-2.5 py-1 rounded-full whitespace-nowrap"
+                    style={{ background: 'rgba(255,255,255,0.22)' }}>
                     {activeDiscount.valueLabel}
                   </span>
                 )}
@@ -108,8 +109,8 @@ export default async function StorePage({ params }: Props) {
             )}
 
             {store.description && (
-              <div style={card}>
-                <p className="text-sm leading-relaxed" style={{ color: '#666' }}>{store.description}</p>
+              <div style={{ ...card, padding: 14 }}>
+                <ExpandableText text={store.description} />
               </div>
             )}
 
