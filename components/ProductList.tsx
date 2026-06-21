@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { StoreItem } from "@/types";
 import { OrderBar, useCart, type OrderingInfo } from "@/components/OrderBar";
@@ -13,9 +13,24 @@ interface Props {
 
 export function ProductList({ items, categoryEmoji, ordering }: Props) {
   const { cart, update, clear } = useCart(ordering?.storeSlug ?? '');
+  // Preorder mode is opt-in: catalog stays clean until the user taps "Start Preorder".
+  const [preorderMode, setPreorderMode] = useState(false);
   // Only items with an image participate in the gallery
   const galleryItems = items.filter((i) => i.imageUrl);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  // If a saved cart already has items (returning visitor), open straight into preorder
+  // mode — but only once, so the Cancel button isn't immediately overridden.
+  const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const didAutoOpen = useRef(false);
+  useEffect(() => {
+    if (ordering && cartCount > 0 && !didAutoOpen.current) {
+      didAutoOpen.current = true;
+      setPreorderMode(true);
+    }
+  }, [ordering, cartCount]);
+
+  const showSteppers = !!ordering && preorderMode;
 
   const close = useCallback(() => setOpenIndex(null), []);
   const prev = useCallback(() => setOpenIndex((i) => (i === null ? null : (i + galleryItems.length - 1) % galleryItems.length)), [galleryItems.length]);
@@ -45,6 +60,40 @@ export function ProductList({ items, categoryEmoji, ordering }: Props) {
 
   return (
     <>
+      {/* ── Preorder entry / status banner (pilot stores only) ── */}
+      {ordering && (
+        preorderMode ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+            background: '#edfbf1', border: '1px solid rgba(29,185,84,0.2)',
+            borderRadius: 12, padding: '10px 14px', marginBottom: 14,
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#17a44b' }}>
+              📋 Preorder mode — tap <span style={{ fontWeight: 900 }}>+ ADD</span> on items
+            </div>
+            <button
+              onClick={() => setPreorderMode(false)}
+              style={{ fontSize: 12.5, fontWeight: 700, color: '#888', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setPreorderMode(true)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              background: 'linear-gradient(135deg,#1db954,#17a44b)', color: '#fff',
+              border: 'none', borderRadius: 12, padding: '12px', marginBottom: 16,
+              fontWeight: 800, fontSize: 14.5, cursor: 'pointer', fontFamily: 'inherit',
+              boxShadow: '0 4px 14px rgba(29,185,84,0.3)',
+            }}
+          >
+            🛒 Start Preorder
+          </button>
+        )
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
         {items.map((item) => {
           const galleryIdx = item.imageUrl ? galleryItems.findIndex((g) => g.id === item.id) : -1;
@@ -73,7 +122,7 @@ export function ProductList({ items, categoryEmoji, ordering }: Props) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                 <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
-                {ordering && (
+                {showSteppers && (
                   (cart[item.id] || 0) === 0 ? (
                     <button
                       onClick={() => update(item.id, 1)}

@@ -112,7 +112,8 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
       ? `🛵 *Delivery to:* ${address.trim()}`
       : `🏪 *Pickup* from store`;
     const msg = [
-      `🛒 *Order via LocalAdda* — ${ordering.storeName}`,
+      `📋 *Preorder via LocalAdda* — ${ordering.storeName}`,
+      `Hi, I'd like to preorder the following:`,
       '',
       itemLines,
       `*Total: ₹${fmt(total)}* (cash ${orderType === 'DELIVERY' ? 'on delivery' : 'on pickup'})`,
@@ -162,8 +163,8 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
             borderRadius: 16, padding: '14px 18px',
             boxShadow: '0 8px 28px rgba(0,0,0,0.35)', fontFamily: 'inherit',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>🛒 {count} item{count > 1 ? 's' : ''}</span>
-            <span style={{ fontWeight: 900, fontSize: 15 }}>₹{fmt(total)} · View cart →</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>📋 {count} item{count > 1 ? 's' : ''}</span>
+            <span style={{ fontWeight: 900, fontSize: 15 }}>₹{fmt(total)} · Review preorder →</span>
           </button>
         </div>
       )}
@@ -177,7 +178,7 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
 
             {step === 'review' && (
               <>
-                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', marginBottom: 14 }}>Your order</div>
+                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', marginBottom: 14 }}>Your preorder</div>
                 <div style={{ maxHeight: '40vh', overflowY: 'auto', marginBottom: 14 }}>
                   {lines.map(({ item, qty }) => (
                     <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f3f3f3' }}>
@@ -206,7 +207,7 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
             {step === 'phone' && (
               <>
                 <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', marginBottom: 6 }}>Verify your number</div>
-                <p style={{ fontSize: 13, color: '#888', marginBottom: 14 }}>We send a one-time code so the store knows this order is from a real customer.</p>
+                <p style={{ fontSize: 13, color: '#888', marginBottom: 14 }}>We send a one-time code so the store knows this preorder is from a real customer.</p>
                 <div style={label}>Your name</div>
                 <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
                 <div style={label}>Mobile number</div>
@@ -237,9 +238,9 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
             {step === 'blocked' && (
               <>
                 <div style={{ textAlign: 'center', padding: '12px 0 4px', fontSize: 44 }}>🔒</div>
-                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', textAlign: 'center', marginBottom: 8 }}>Ordering is invite-only right now</div>
+                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', textAlign: 'center', marginBottom: 8 }}>Preorder is invite-only right now</div>
                 <p style={{ fontSize: 13.5, color: '#888', textAlign: 'center', marginBottom: 16, lineHeight: 1.6 }}>
-                  We're piloting online orders with a small group. Your number is verified — we'll enable it soon!
+                  We're piloting preorders with a small group. Your number is verified — we'll enable it soon!
                 </p>
                 <button onClick={() => setStep('closed')} style={{ ...primaryBtn, background: '#1a1a2e', boxShadow: 'none' }}>OK</button>
               </>
@@ -268,11 +269,11 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
                   </>
                 )}
                 <p style={{ fontSize: 12.5, color: '#888', margin: '4px 0 14px' }}>
-                  💵 Pay cash {orderType === 'DELIVERY' ? 'on delivery' : 'at pickup'}. Your order opens in WhatsApp — hit send to confirm with the store.
+                  💵 Pay cash {orderType === 'DELIVERY' ? 'on delivery' : 'at pickup'}. Your preorder opens in WhatsApp — hit send to confirm with the store.
                 </p>
                 <button onClick={placeOrder} style={primaryBtn}
                   disabled={orderType === 'DELIVERY' && address.trim().length < 8}>
-                  Place order on WhatsApp →
+                  Send preorder on WhatsApp →
                 </button>
               </>
             )}
