@@ -10,14 +10,30 @@ interface Props {
   categoryEmoji: string;
   ordering?: OrderingInfo | null;
   schema?: CategoryField[];
+  categorySlug?: string;
+}
+
+// Iconic veg / non-veg / egg indicator square used on restaurant menus.
+function FoodMark({ type }: { type: string }) {
+  const color = type === 'Veg' ? '#1a7a35' : type === 'Egg' ? '#d99100' : '#c01818';
+  return (
+    <span title={type} style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 15, height: 15, border: `1.5px solid ${color}`, borderRadius: 3, flexShrink: 0,
+    }}>
+      <span style={{ width: 7, height: 7, borderRadius: '50%', background: color }} />
+    </span>
+  );
 }
 
 // Render an item's category attributes as compact chips, ordered by the schema.
-function attrChips(item: StoreItem, schema?: CategoryField[]) {
+function attrChips(item: StoreItem, schema?: CategoryField[], categorySlug?: string) {
   const attrs = item.attributes;
   if (!schema || !attrs) return null;
   const chips: { text: string; tone: 'bool' | 'plain' }[] = [];
   for (const f of schema) {
+    // foodType is shown as the veg/non-veg mark for restaurants, not a chip
+    if (categorySlug === 'restaurant' && f.key === 'foodType') continue;
     const v = attrs[f.key];
     if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) continue;
     if (f.type === 'bool') {
@@ -45,10 +61,15 @@ function attrChips(item: StoreItem, schema?: CategoryField[]) {
   );
 }
 
-export function ProductList({ items, categoryEmoji, ordering, schema }: Props) {
+export function ProductList({ items, categoryEmoji, ordering, schema, categorySlug }: Props) {
   const { cart, update, clear } = useCart(ordering?.storeSlug ?? '');
   // Preorder mode is opt-in: catalog stays clean until the user taps "Start Preorder".
   const [preorderMode, setPreorderMode] = useState(false);
+  // Restaurant: optional veg-only filter.
+  const isRestaurant = categorySlug === 'restaurant';
+  const hasVeg = isRestaurant && items.some((i) => i.attributes?.foodType === 'Veg');
+  const [vegOnly, setVegOnly] = useState(false);
+  const shownItems = vegOnly ? items.filter((i) => i.attributes?.foodType === 'Veg') : items;
   // Only items with an image participate in the gallery
   const galleryItems = items.filter((i) => i.imageUrl);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -128,9 +149,27 @@ export function ProductList({ items, categoryEmoji, ordering, schema }: Props) {
         )
       )}
 
+      {/* Restaurant: veg-only filter */}
+      {hasVeg && (
+        <div style={{ marginBottom: 12 }}>
+          <button
+            onClick={() => setVegOnly((v) => !v)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer',
+              padding: '6px 12px', borderRadius: 20, fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit',
+              border: vegOnly ? '1.5px solid #1a7a35' : '1.5px solid #e0e0e0',
+              background: vegOnly ? '#eaf7ee' : '#fff', color: vegOnly ? '#1a7a35' : '#888',
+            }}
+          >
+            <FoodMark type="Veg" /> Veg only{vegOnly ? ' ✓' : ''}
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-        {items.map((item) => {
+        {shownItems.map((item) => {
           const galleryIdx = item.imageUrl ? galleryItems.findIndex((g) => g.id === item.id) : -1;
+          const foodType = isRestaurant ? (item.attributes?.foodType as string | undefined) : undefined;
           return (
             <div key={item.id} className="flex items-center gap-3 py-2.5"
               style={{ borderBottom: '1px solid #f5f5f5' }}>
@@ -149,11 +188,13 @@ export function ProductList({ items, categoryEmoji, ordering, schema }: Props) {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm truncate" style={{ color: '#1a1a2e' }}>
-                  {item.name}{item.isFeatured && <span className="ml-1 text-xs" style={{ color: '#f5a623' }}>★</span>}
+                <div className="font-semibold text-sm flex items-center gap-1.5" style={{ color: '#1a1a2e' }}>
+                  {foodType && <FoodMark type={foodType} />}
+                  <span className="truncate">{item.name}</span>
+                  {item.isFeatured && <span className="text-xs" style={{ color: '#f5a623' }}>★</span>}
                 </div>
                 {item.unit && <div className="text-xs" style={{ color: '#aaa' }}>per {item.unit}</div>}
-                {attrChips(item, schema)}
+                {attrChips(item, schema, categorySlug)}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                 <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>

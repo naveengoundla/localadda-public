@@ -128,12 +128,15 @@ export default async function StorePage({ params }: Props) {
                   {store.category.slug === 'vegetables' ? "🥬 Today's Rates"
                     : store.category.slug === 'optical' ? '👓 Our Collection'
                     : store.category.slug === 'clothing' ? '👗 Collection'
+                    : store.category.slug === 'restaurant' ? '🍽️ Menu'
+                    : store.category.slug === 'mobile' ? '📱 Phones & Accessories'
                     : '📦 Products & Prices'}
                 </h2>
                 <ProductList
                   items={allItems}
                   categoryEmoji={store.category.emoji}
                   schema={store.category.itemSchema}
+                  categorySlug={store.category.slug}
                   ordering={store.orderingEnabled && store.phone ? {
                     storeSlug: store.slug,
                     storeName: store.name,
