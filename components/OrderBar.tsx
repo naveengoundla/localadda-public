@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { StoreItem } from "@/types";
-import { getCustomer, sendCustomerOtp, verifyCustomerOtp, type CustomerProfile } from "@/lib/customerAuth";
+import { getCustomer, redeemInviteCode, type CustomerProfile } from "@/lib/customerAuth";
 
 export interface OrderingInfo {
   storeSlug: string;
@@ -11,7 +11,7 @@ export interface OrderingInfo {
 }
 
 type Cart = Record<string, number>;
-type Step = 'closed' | 'review' | 'phone' | 'otp' | 'details' | 'blocked';
+type Step = 'closed' | 'review' | 'unlock' | 'details';
 
 const cartKey = (slug: string) => `la_cart_${slug}`;
 
@@ -53,7 +53,7 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
   const [customer, setCustomer] = useState<CustomerProfile | null>(null);
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
-  const [otp, setOtp] = useState('');
+  const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [orderType, setOrderType] = useState<'PICKUP' | 'DELIVERY'>('PICKUP');
@@ -73,33 +73,24 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
     const c = getCustomer();
     setCustomer(c);
     setError('');
-    if (!c) { setStep('phone'); return; }
-    if (!c.orderingEnabled) { setStep('blocked'); return; }
-    setName(c.name);
-    setStep('details');
-  }
-
-  async function handleSendOtp() {
-    setBusy(true); setError('');
-    try {
-      await sendCustomerOtp(phone);
-      setStep('otp');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not send OTP');
-    } finally {
-      setBusy(false);
+    // Already unlocked in a previous session → straight to fulfilment.
+    if (c && c.orderingEnabled) {
+      setName(c.name);
+      setPhone(c.phone || '');
+      setStep('details');
+      return;
     }
+    setStep('unlock');
   }
 
-  async function handleVerifyOtp() {
+  async function handleRedeemCode() {
     setBusy(true); setError('');
     try {
-      const profile = await verifyCustomerOtp(phone, otp, name || undefined);
+      const profile = await redeemInviteCode(code.trim(), name.trim(), phone.trim());
       setCustomer(profile);
-      if (!profile.orderingEnabled) { setStep('blocked'); return; }
       setStep('details');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Verification failed');
+      setError(e instanceof Error ? e.message : 'Could not verify code');
     } finally {
       setBusy(false);
     }
@@ -204,45 +195,32 @@ export function OrderBar({ items, ordering, cart, updateCart, clearCart }: {
               </>
             )}
 
-            {step === 'phone' && (
+            {step === 'unlock' && (
               <>
-                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', marginBottom: 6 }}>Verify your number</div>
-                <p style={{ fontSize: 13, color: '#888', marginBottom: 14 }}>We send a one-time code so the store knows this preorder is from a real customer.</p>
+                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', marginBottom: 6 }}>Enter your invite code</div>
+                <p style={{ fontSize: 13, color: '#888', marginBottom: 14 }}>
+                  Preorder is in early access. Enter the code you received to unlock it.
+                </p>
+                <div style={label}>Invite code</div>
+                <input
+                  style={{ ...inputStyle, letterSpacing: 2, fontWeight: 800, textTransform: 'uppercase' }}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="LADDA-XXXXXX"
+                  autoFocus
+                />
                 <div style={label}>Your name</div>
                 <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
                 <div style={label}>Mobile number</div>
                 <input style={inputStyle} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10-digit mobile" inputMode="numeric" maxLength={10} />
                 {error && <p style={{ fontSize: 12.5, color: '#e8401c', marginBottom: 10 }}>{error}</p>}
-                <button onClick={handleSendOtp} style={primaryBtn} disabled={busy || phone.replace(/\D/g, '').length !== 10}>
-                  {busy ? 'Sending…' : 'Send OTP'}
+                <button
+                  onClick={handleRedeemCode}
+                  style={primaryBtn}
+                  disabled={busy || code.trim().length < 4 || phone.replace(/\D/g, '').length !== 10 || name.trim().length < 2}
+                >
+                  {busy ? 'Verifying…' : 'Unlock preorder'}
                 </button>
-              </>
-            )}
-
-            {step === 'otp' && (
-              <>
-                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', marginBottom: 6 }}>Enter the code</div>
-                <p style={{ fontSize: 13, color: '#888', marginBottom: 14 }}>Sent to {phone}</p>
-                <input style={{ ...inputStyle, letterSpacing: 8, textAlign: 'center', fontWeight: 800, fontSize: 20 }}
-                  value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} placeholder="••••••" inputMode="numeric" maxLength={6} autoFocus />
-                {error && <p style={{ fontSize: 12.5, color: '#e8401c', marginBottom: 10 }}>{error}</p>}
-                <button onClick={handleVerifyOtp} style={primaryBtn} disabled={busy || otp.length < 4}>
-                  {busy ? 'Verifying…' : 'Verify'}
-                </button>
-                <button onClick={() => { setStep('phone'); setOtp(''); }} style={{ width: '100%', marginTop: 10, padding: 10, background: 'none', border: 'none', color: '#888', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                  ← Change number
-                </button>
-              </>
-            )}
-
-            {step === 'blocked' && (
-              <>
-                <div style={{ textAlign: 'center', padding: '12px 0 4px', fontSize: 44 }}>🔒</div>
-                <div style={{ fontWeight: 900, fontSize: 17, color: '#1a1a2e', textAlign: 'center', marginBottom: 8 }}>Preorder is invite-only right now</div>
-                <p style={{ fontSize: 13.5, color: '#888', textAlign: 'center', marginBottom: 16, lineHeight: 1.6 }}>
-                  We're piloting preorders with a small group. Your number is verified — we'll enable it soon!
-                </p>
-                <button onClick={() => setStep('closed')} style={{ ...primaryBtn, background: '#1a1a2e', boxShadow: 'none' }}>OK</button>
               </>
             )}
 

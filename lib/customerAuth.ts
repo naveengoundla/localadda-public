@@ -45,6 +45,35 @@ export async function sendCustomerOtp(phone: string): Promise<void> {
   }
 }
 
+export async function redeemInviteCode(code: string, name: string, phone: string): Promise<CustomerProfile> {
+  const res = await fetch(`${API}/api/customer/auth/redeem-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, name, phone }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(err?.error || err?.message || 'Could not verify code');
+  }
+  const data = await res.json();
+
+  let exp = Date.now() + 24 * 60 * 60 * 1000;
+  try {
+    exp = JSON.parse(atob(data.token.split('.')[1])).exp * 1000;
+  } catch { /* keep fallback */ }
+
+  const profile: CustomerProfile = {
+    customerId: data.customerId,
+    name: data.name || name || '',
+    phone,
+    orderingEnabled: !!data.orderingEnabled,
+    exp,
+  };
+  localStorage.setItem(TOKEN_KEY, data.token);
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  return profile;
+}
+
 export async function verifyCustomerOtp(phone: string, otp: string, name?: string): Promise<CustomerProfile> {
   const res = await fetch(`${API}/api/customer/auth/verify-otp`, {
     method: 'POST',
