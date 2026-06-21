@@ -63,27 +63,43 @@ export default async function StorePage({ params }: Props) {
         </div>
       </header>
 
-      {/* Banner */}
-      <div className="relative w-full" style={{ height: 168 }}>
+      {/* Banner — store name, category, discount label & description overlaid */}
+      <div style={{ position: 'relative', minHeight: 132, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflow: 'hidden' }}>
         <StoreImage
           src={store.bannerUrl}
           alt={store.name}
           emoji={store.category.emoji}
           gradient={gradient}
           sizes="100vw"
-          emojiSize={48}
+          emojiSize={40}
           quality={85}
         />
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.15) 60%,transparent 100%)' }} />
-        <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 pb-4">
+          style={{ background: 'linear-gradient(to top,rgba(10,12,24,0.93) 0%,rgba(10,12,24,0.5) 46%,rgba(0,0,0,0.04) 100%)' }} />
+
+        {/* Discount label */}
+        {activeDiscount && (
+          <div style={{ position: 'absolute', top: 10, right: 12, zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'linear-gradient(135deg,#e8401c,#f5a623)', color: '#fff', fontSize: 11, fontWeight: 800, padding: '5px 11px', borderRadius: 99, boxShadow: '0 3px 10px rgba(232,64,28,0.4)', maxWidth: '70%' }}>
+            <span>🎉</span>
+            <span className="truncate">{activeDiscount.valueLabel || activeDiscount.title}</span>
+          </div>
+        )}
+
+        {/* Overlaid info */}
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6" style={{ position: 'relative', zIndex: 1, paddingTop: 14, paddingBottom: 12 }}>
           <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">{store.name}</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.72)' }}>
             {store.category.emoji} {store.category.name} · {store.city.name}
           </p>
+          {store.description && (
+            <div className="mt-1.5 max-w-2xl">
+              <ExpandableText text={store.description} lines={1} size={11} color="rgba(255,255,255,0.82)" moreColor="#f5a623" />
+            </div>
+          )}
         </div>
+
         {/* Category color bottom line */}
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: gradient }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: gradient, zIndex: 2 }} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -91,28 +107,6 @@ export default async function StorePage({ params }: Props) {
 
           {/* ── Left ── */}
           <div className="lg:col-span-2 space-y-3">
-
-            {activeDiscount && (
-              <div className="rounded-xl px-4 py-2.5 flex items-center justify-between gap-3"
-                style={{ background: 'linear-gradient(135deg,#e8401c,#f5a623)' }}>
-                <div className="min-w-0 flex items-center gap-2">
-                  <span>🎉</span>
-                  <span className="font-black text-sm text-white truncate">{activeDiscount.title}</span>
-                </div>
-                {activeDiscount.valueLabel && (
-                  <span className="text-white font-black text-xs px-2.5 py-1 rounded-full whitespace-nowrap"
-                    style={{ background: 'rgba(255,255,255,0.22)' }}>
-                    {activeDiscount.valueLabel}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {store.description && (
-              <div style={{ ...card, padding: 14 }}>
-                <ExpandableText text={store.description} />
-              </div>
-            )}
 
             {/* Vegetables: fresh-rates banner */}
             {store.category.slug === 'vegetables' && allItems.length > 0 && (
