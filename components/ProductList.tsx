@@ -72,17 +72,53 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
   const [preorderMode, setPreorderMode] = useState(false);
 
   const isRestaurant = categorySlug === 'restaurant';
-  const hasVeg = isRestaurant && items.some((i) => i.attributes?.foodType === 'Veg');
-  const [vegOnly, setVegOnly] = useState(false);
+
+  // ── Attribute filters (fields marked filterable) ──
+  const filterableFields = (schema ?? []).filter((f) => f.filterable);
+  const [filters, setFilters] = useState<Record<string, string[]>>({});
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const activeCount = Object.values(filters).reduce((a, v) => a + v.length, 0);
+  const filterSig = JSON.stringify(filters);
+
+  const matchFilters = (it: StoreItem) => {
+    for (const f of filterableFields) {
+      const vals = filters[f.key];
+      if (!vals || vals.length === 0) continue;
+      const v = it.attributes?.[f.key];
+      let ok: boolean;
+      if (f.type === 'bool') ok = vals.includes('true') ? v === true : true;
+      else if (Array.isArray(v)) ok = v.some((x) => vals.includes(String(x)));
+      else ok = vals.includes(String(v));
+      if (!ok) return false;
+    }
+    return true;
+  };
+
+  const toggleFilter = (key: string, val: string) => {
+    setFilters((cur) => {
+      const set = new Set(cur[key] ?? []);
+      if (set.has(val)) set.delete(val); else set.add(val);
+      const next = { ...cur };
+      if (set.size === 0) delete next[key]; else next[key] = Array.from(set);
+      return next;
+    });
+  };
+
+  const labelFor = (key: string, val: string) => {
+    const f = filterableFields.find((x) => x.key === key);
+    return f?.type === 'bool' ? (f.label) : val;
+  };
+
+  // Primary field gets quick inline chips; the rest live in the sheet.
+  const primary = filterableFields.find((f) => f.type === 'tags' || f.type === 'select');
 
   // ── Search + lazy load ──
   const INITIAL = isGrid ? 8 : 16;
   const [query, setQuery] = useState('');
   const [shown, setShown] = useState(INITIAL);
-  useEffect(() => { setShown(INITIAL); }, [query, vegOnly, INITIAL]);
+  useEffect(() => { setShown(INITIAL); }, [query, filterSig, INITIAL]);
 
-  let filtered = items;
-  if (vegOnly) filtered = filtered.filter((i) => i.attributes?.foodType === 'Veg');
+  let filtered = items.filter(matchFilters);
   if (query.trim()) {
     const q = query.trim().toLowerCase();
     filtered = filtered.filter((i) => i.name.toLowerCase().includes(q));
@@ -261,12 +297,28 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         </div>
       )}
 
-      {/* ── Restaurant veg filter ── */}
-      {hasVeg && (
-        <div style={{ marginBottom: 12 }}>
-          <button onClick={() => setVegOnly((v) => !v)} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer', padding: '6px 12px', borderRadius: 20, fontSize: 12.5, fontWeight: 700, fontFamily: 'inherit', border: vegOnly ? '1.5px solid #1a7a35' : '1.5px solid #e0e0e0', background: vegOnly ? '#eaf7ee' : '#fff', color: vegOnly ? '#1a7a35' : '#888' }}>
-            <FoodMark type="Veg" /> Veg only{vegOnly ? ' ✓' : ''}
+      {/* ── Compact filter row ── */}
+      {filterableFields.length > 0 && (
+        <div className="scrollbar-hide" style={{ display: 'flex', gap: 6, alignItems: 'center', overflowX: 'auto', marginBottom: 12, paddingBottom: 2 }}>
+          <button onClick={() => setSheetOpen(true)}
+            style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6, background: '#1a1a2e', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 11.5, fontWeight: 800, padding: '5px 12px', borderRadius: 99, fontFamily: 'inherit' }}>
+            ☰ Filters
+            {activeCount > 0 && <span style={{ background: '#f5a623', color: '#1a1a2e', borderRadius: 99, fontSize: 9, fontWeight: 900, padding: '0 5px' }}>{activeCount}</span>}
           </button>
+          {/* active filters as removable chips */}
+          {Object.entries(filters).flatMap(([k, vals]) => vals.map((val) => (
+            <button key={k + val} onClick={() => toggleFilter(k, val)}
+              style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 99, border: '1px solid #17a44b', background: '#edfbf1', color: '#17a44b', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {labelFor(k, val)} <span style={{ opacity: 0.6 }}>✕</span>
+            </button>
+          )))}
+          {/* quick chips for the primary field (unselected options) */}
+          {primary?.options?.filter((o) => !(filters[primary.key] ?? []).includes(o)).map((o) => (
+            <button key={o} onClick={() => toggleFilter(primary.key, o)}
+              style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 99, border: '1px solid #e0ddd5', background: '#fff', color: '#777', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              {o}
+            </button>
+          ))}
         </div>
       )}
 
@@ -312,6 +364,54 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         >
           Show {Math.min(INITIAL, filtered.length - shown)} more · {filtered.length - shown} left ↓
         </button>
+      )}
+
+      {/* ── Filter sheet ── */}
+      {sheetOpen && (
+        <>
+          <div onClick={() => setSheetOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 130, background: 'rgba(10,10,20,0.45)' }} />
+          <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 131, background: '#fff', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 40px rgba(0,0,0,0.25)', padding: '18px 18px max(18px, env(safe-area-inset-bottom))', maxWidth: 560, margin: '0 auto', animation: 'fadeUp 0.2s ease both', maxHeight: '80vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontWeight: 900, fontSize: 16, color: '#1a1a2e' }}>Filters</span>
+              <button onClick={() => setSheetOpen(false)} aria-label="Close" style={{ border: 'none', background: 'none', fontSize: 16, color: '#aaa', cursor: 'pointer' }}>✕</button>
+            </div>
+            {filterableFields.map((f) => (
+              <div key={f.key} style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#888', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 7 }}>{f.label}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {f.type === 'bool' ? (
+                    (() => { const on = (filters[f.key] ?? []).includes('true'); return (
+                      <button onClick={() => toggleFilter(f.key, 'true')}
+                        style={{ fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 99, cursor: 'pointer', border: on ? '1.5px solid #17a44b' : '1.5px solid #e0ddd5', background: on ? '#edfbf1' : '#fff', color: on ? '#17a44b' : '#777' }}>
+                        {f.label}{on ? ' ✓' : ''}
+                      </button>
+                    ); })()
+                  ) : (
+                    f.options?.map((o) => {
+                      const on = (filters[f.key] ?? []).includes(o);
+                      return (
+                        <button key={o} onClick={() => toggleFilter(f.key, o)}
+                          style={{ fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 99, cursor: 'pointer', border: on ? '1.5px solid #17a44b' : '1.5px solid #e0ddd5', background: on ? '#edfbf1' : '#fff', color: on ? '#17a44b' : '#777' }}>
+                          {o}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            ))}
+            <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+              <button onClick={() => setFilters({})} disabled={activeCount === 0}
+                style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1.5px solid #e0e0e0', background: '#fff', color: activeCount ? '#888' : '#ccc', fontWeight: 800, fontSize: 13, cursor: activeCount ? 'pointer' : 'default' }}>
+                Clear
+              </button>
+              <button onClick={() => setSheetOpen(false)}
+                style={{ flex: 2, padding: '11px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#1db954,#17a44b)', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' }}>
+                Show {filtered.length} item{filtered.length === 1 ? '' : 's'}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── Cart bar + checkout ── */}
