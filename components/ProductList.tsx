@@ -12,6 +12,7 @@ interface Props {
   schema?: CategoryField[];
   categorySlug?: string;
   layout?: 'list' | 'grid' | 'menu';
+  groupBy?: string | null;
 }
 
 // Iconic veg / non-veg / egg indicator square used on restaurant menus.
@@ -27,12 +28,13 @@ function FoodMark({ type }: { type: string }) {
   );
 }
 
-function attrChips(item: StoreItem, schema?: CategoryField[], categorySlug?: string) {
+function attrChips(item: StoreItem, schema?: CategoryField[], categorySlug?: string, groupKey?: string) {
   const attrs = item.attributes;
   if (!schema || !attrs) return null;
   const chips: { text: string; tone: 'bool' | 'plain' }[] = [];
   for (const f of schema) {
-    if (categorySlug === 'restaurant' && (f.key === 'foodType' || f.key === 'course')) continue;
+    if (categorySlug === 'restaurant' && f.key === 'foodType') continue; // shown as the veg mark
+    if (groupKey && f.key === groupKey) continue;                        // shown as the section header
     const v = attrs[f.key];
     if (v == null || v === '' || (Array.isArray(v) && v.length === 0)) continue;
     if (f.type === 'bool') {
@@ -60,9 +62,12 @@ function attrChips(item: StoreItem, schema?: CategoryField[], categorySlug?: str
   );
 }
 
-export function ProductList({ items, categoryEmoji, ordering, schema, categorySlug, layout = 'list' }: Props) {
+export function ProductList({ items, categoryEmoji, ordering, schema, categorySlug, layout = 'list', groupBy }: Props) {
   const isGrid = layout === 'grid';
-  const isMenu = layout === 'menu';
+  // Group items into sections by an attribute key (e.g. grocery "aisle",
+  // restaurant "course"). 'menu' layout implies grouping by course.
+  const groupKey = groupBy || (layout === 'menu' ? 'course' : '');
+  const isGrouped = !!groupKey;
   const { cart, update, clear } = useCart(ordering?.storeSlug ?? '');
   const [preorderMode, setPreorderMode] = useState(false);
 
@@ -82,23 +87,23 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
     const q = query.trim().toLowerCase();
     filtered = filtered.filter((i) => i.name.toLowerCase().includes(q));
   }
-  // Menu shows all (grouped); list/grid lazy-load.
-  const visible = isMenu ? filtered : filtered.slice(0, shown);
+  // Grouped shows all sections; flat list/grid lazy-loads.
+  const visible = isGrouped ? filtered : filtered.slice(0, shown);
   const showSearch = items.length >= 8;
 
-  // Menu grouping by the "course" attribute, ordered by the schema's option list.
-  const courseField = schema?.find((f) => f.key === 'course');
-  const courseOrder = courseField?.options ?? [];
-  const menuGroups: { name: string; items: StoreItem[] }[] = (() => {
-    if (!isMenu) return [];
+  // Build sections, ordered by the grouping field's schema option list.
+  const groupField = schema?.find((f) => f.key === groupKey);
+  const groupOrder = groupField?.options ?? [];
+  const groups: { name: string; items: StoreItem[] }[] = (() => {
+    if (!isGrouped) return [];
     const map = new Map<string, StoreItem[]>();
     for (const it of filtered) {
-      const c = (it.attributes?.course as string) || 'More';
+      const c = (it.attributes?.[groupKey] as string) || 'More';
       if (!map.has(c)) map.set(c, []);
       map.get(c)!.push(it);
     }
     const rank = (n: string) => {
-      const i = courseOrder.indexOf(n);
+      const i = groupOrder.indexOf(n);
       return i === -1 ? 999 : i;
     };
     return Array.from(map.entries())
@@ -183,7 +188,7 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
             {item.isFeatured && <span className="text-xs" style={{ color: '#f5a623' }}>★</span>}
           </div>
           {item.unit && <div className="text-xs" style={{ color: '#aaa' }}>per {item.unit}</div>}
-          {attrChips(item, schema, categorySlug)}
+          {attrChips(item, schema, categorySlug, groupKey)}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <div className="font-black text-base" style={{ color: '#e8401c' }}>₹{item.price}</div>
@@ -192,6 +197,39 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
       </div>
     );
   };
+
+  // Shared grid card
+  const gridCard = (item: StoreItem) => (
+    <div key={item.id} className="premium-card" style={{ display: 'flex', flexDirection: 'column' }}>
+      <button
+        onClick={() => item.imageUrl && openLightbox(item)}
+        style={{ position: 'relative', width: '100%', height: 150, border: 'none', padding: 0, background: '#f4f2ee', cursor: item.imageUrl ? 'zoom-in' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        aria-label={item.imageUrl ? `View ${item.name}` : item.name}
+      >
+        {item.imageUrl
+          ? <Image src={item.imageUrl} alt={item.name} fill className="object-cover" sizes="(max-width:640px) 50vw, 25vw" />
+          : <span style={{ fontSize: 40 }}>{categoryEmoji}</span>}
+        {item.isFeatured && (
+          <span style={{ position: 'absolute', top: 6, left: 6, fontSize: 10, fontWeight: 800, color: '#fff', background: 'rgba(245,166,35,0.95)', padding: '2px 6px', borderRadius: 6 }}>★ Featured</span>
+        )}
+      </button>
+      <div style={{ padding: '9px 10px 10px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div style={{ fontWeight: 800, fontSize: 12.5, color: '#1a1a2e', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.name}</div>
+        {attrChips(item, schema, categorySlug, groupKey)}
+        <div style={{ flex: 1 }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, gap: 6 }}>
+          <span style={{ fontWeight: 900, fontSize: 14, color: '#e8401c' }}>₹{item.price}</span>
+          {showSteppers && <Stepper id={item.id} />}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderItems = (list: StoreItem[]) => (
+    isGrid
+      ? <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{list.map(gridCard)}</div>
+      : <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">{list.map(listRow)}</div>
+  );
 
   return (
     <>
@@ -237,63 +275,37 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         <p style={{ fontSize: 13.5, color: '#aaa', padding: '12px 0' }}>No items match “{query}”.</p>
       )}
 
-      {/* ── GRID layout ── */}
-      {isGrid && filtered.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {visible.map((item) => (
-            <div key={item.id} className="premium-card" style={{ display: 'flex', flexDirection: 'column' }}>
-              <button
-                onClick={() => item.imageUrl && openLightbox(item)}
-                style={{ position: 'relative', width: '100%', height: 150, border: 'none', padding: 0, background: '#f4f2ee', cursor: item.imageUrl ? 'zoom-in' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                aria-label={item.imageUrl ? `View ${item.name}` : item.name}
-              >
-                {item.imageUrl
-                  ? <Image src={item.imageUrl} alt={item.name} fill className="object-cover" sizes="(max-width:640px) 50vw, 25vw" />
-                  : <span style={{ fontSize: 40 }}>{categoryEmoji}</span>}
-                {item.isFeatured && (
-                  <span style={{ position: 'absolute', top: 6, left: 6, fontSize: 10, fontWeight: 800, color: '#fff', background: 'rgba(245,166,35,0.95)', padding: '2px 6px', borderRadius: 6 }}>★ Featured</span>
-                )}
-              </button>
-              <div style={{ padding: '9px 10px 10px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 12.5, color: '#1a1a2e', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.name}</div>
-                {attrChips(item, schema, categorySlug)}
-                <div style={{ flex: 1 }} />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, gap: 6 }}>
-                  <span style={{ fontWeight: 900, fontSize: 14, color: '#e8401c' }}>₹{item.price}</span>
-                  {showSteppers && <Stepper id={item.id} />}
-                </div>
-              </div>
-            </div>
+      {/* ── Section chip-nav (grouped, 2+ sections) ── */}
+      {isGrouped && groups.length > 1 && (
+        <div className="scrollbar-hide" style={{ display: 'flex', gap: 7, overflowX: 'auto', marginBottom: 12, paddingBottom: 2 }}>
+          {groups.map((g) => (
+            <a key={g.name} href={`#sec-${g.name.replace(/\W+/g, '-')}`} onClick={(e) => {
+              e.preventDefault();
+              document.getElementById(`sec-${g.name.replace(/\W+/g, '-')}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+              style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 700, padding: '5px 12px', borderRadius: 99, whiteSpace: 'nowrap', textDecoration: 'none', border: '1px solid #e0ddd5', color: '#666', background: '#fff' }}>
+              {g.name}
+            </a>
           ))}
         </div>
       )}
 
-      {/* ── LIST layout ── */}
-      {layout === 'list' && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-          {visible.map((item) => listRow(item))}
-        </div>
-      )}
+      {/* ── Flat (ungrouped) ── */}
+      {!isGrouped && filtered.length > 0 && renderItems(visible)}
 
-      {/* ── MENU layout (grouped by section) ── */}
-      {isMenu && menuGroups.length > 0 && (
-        <div>
-          {menuGroups.map((g) => (
-            <section key={g.name} style={{ marginBottom: 18 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '4px 0 6px', paddingBottom: 6, borderBottom: '2px solid #f0ede7' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.01em' }}>{g.name}</h3>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#bbb' }}>{g.items.length}</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-                {g.items.map((item) => listRow(item))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
+      {/* ── Grouped sections ── */}
+      {isGrouped && groups.map((g) => (
+        <section key={g.name} id={`sec-${g.name.replace(/\W+/g, '-')}`} style={{ marginBottom: 18, scrollMarginTop: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, margin: '4px 0 8px', paddingBottom: 6, borderBottom: '2px solid #f0ede7' }}>
+            <h3 style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.01em' }}>{g.name}</h3>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#bbb' }}>{g.items.length}</span>
+          </div>
+          {renderItems(g.items)}
+        </section>
+      ))}
 
-      {/* ── Show more (list/grid only) ── */}
-      {!isMenu && filtered.length > shown && (
+      {/* ── Show more (flat only) ── */}
+      {!isGrouped && filtered.length > shown && (
         <button
           onClick={() => setShown((s) => s + INITIAL)}
           style={{ width: '100%', marginTop: 14, padding: '11px', borderRadius: 10, border: '1px solid #e6e1d8', background: '#fff', color: '#17a44b', fontWeight: 800, fontSize: 13.5, cursor: 'pointer', fontFamily: 'inherit' }}
