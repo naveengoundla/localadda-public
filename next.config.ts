@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.r2.dev" },
+      { protocol: "https", hostname: "assets.localadda.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
     formats: ["image/avif", "image/webp"],
