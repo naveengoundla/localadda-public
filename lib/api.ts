@@ -1,6 +1,6 @@
 import type { City, Store, Category } from "@/types";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://localadda-backend-production-a7e8.up.railway.app";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.localadda.com";
 
 export async function getCities(): Promise<City[]> {
   const res = await fetch(`${API}/api/cities`, { next: { revalidate: 3600 } });

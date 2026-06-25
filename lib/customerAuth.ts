@@ -1,6 +1,6 @@
 'use client';
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://localadda-backend-production-a7e8.up.railway.app";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.localadda.com";
 
 const TOKEN_KEY = 'la_customer_token';
 const PROFILE_KEY = 'la_customer_profile';
