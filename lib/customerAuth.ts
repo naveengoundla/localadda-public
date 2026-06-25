@@ -33,11 +33,11 @@ export function logoutCustomer() {
   localStorage.removeItem(PROFILE_KEY);
 }
 
-export async function sendCustomerOtp(phone: string): Promise<void> {
+export async function sendCustomerOtp(phone: string, captchaToken?: string): Promise<void> {
   const res = await fetch(`${API}/api/customer/auth/send-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone }),
+    body: JSON.stringify({ phone, captchaToken }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => null);
