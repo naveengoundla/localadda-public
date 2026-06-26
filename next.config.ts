@@ -5,11 +5,13 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === "development",
+  fallbacks: { document: "/offline" },
   workboxOptions: {
     disableDevLogs: true,
     runtimeCaching: [
       {
-        urlPattern: /^https:\/\/localadda-backend.*\/api\//,
+        // Client-side API reads (current custom domain)
+        urlPattern: /^https:\/\/api\.localadda\.com\/api\//,
         handler: "NetworkFirst",
         options: {
           cacheName: "api-cache",
@@ -18,7 +20,17 @@ const withPWA = require("@ducanh2912/next-pwa").default({
         },
       },
       {
-        urlPattern: /^https:\/\/pub-.*\.r2\.dev\//,
+        // Next.js optimized images (same-origin /_next/image) — the real image path
+        urlPattern: /\/_next\/image\?/,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "next-image-cache",
+          expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365 },
+        },
+      },
+      {
+        // Direct R2 image loads — assets.localadda.com (+ legacy r2.dev during transition)
+        urlPattern: /^https:\/\/(assets\.localadda\.com|pub-.*\.r2\.dev)\//,
         handler: "CacheFirst",
         options: {
           cacheName: "image-cache",
