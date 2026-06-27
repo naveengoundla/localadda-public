@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getCities, getStoresByCity, getCityBanners, groupByCategory } from "@/lib/api";
 import { StoreCard } from "@/components/StoreCard";
 import { BannerCarousel } from "@/components/BannerCarousel";
+import { RememberCity } from "@/components/RememberCity";
 import type { Store } from "@/types";
 
 interface Props {
@@ -75,6 +76,7 @@ export default async function CityPage({ params, searchParams }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f3ef' }}>
+      <RememberCity slug={citySlug} />
 
       {/* ── Header ── */}
       <header style={{
@@ -98,7 +100,7 @@ export default async function CityPage({ params, searchParams }: Props) {
           }}>
             <span style={{ fontSize: 14 }}>📍</span>
             <span className="font-bold text-sm text-white">{city.name}</span>
-            <Link href="/" className="text-xs ml-1 hidden sm:block" style={{ color: 'rgba(255,255,255,0.45)' }}>change</Link>
+            <Link href="/?pick=1" className="text-xs ml-1 hidden sm:block" style={{ color: 'rgba(255,255,255,0.45)' }}>change</Link>
           </div>
         </div>
 
