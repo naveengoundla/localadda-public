@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import type { Banner } from '@/lib/api';
 
 export function BannerCarousel({ banners }: { banners: Banner[] }) {
@@ -14,16 +15,6 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
     const t = setInterval(() => setI((p) => (p + 1) % banners.length), 5000);
     return () => clearInterval(t);
   }, [banners.length]);
-
-  // Preload every banner image up-front so transitions are instant.
-  useEffect(() => {
-    banners.forEach((b) => {
-      if (b.imageUrl) {
-        const img = new Image();
-        img.src = b.imageUrl;
-      }
-    });
-  }, [banners]);
 
   if (!banners.length) return null;
 
@@ -45,7 +36,6 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
       onTouchEnd={onTouchEnd}
       style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', minHeight: 150 }}
     >
-      {/* Stacked layers — all mounted (so all images load) and crossfaded */}
       {banners.map((b, idx) =>
         wrap(
           <div
@@ -61,15 +51,27 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'flex-end',
-              padding: 18,
-              color: '#fff',
-              background: b.imageUrl
-                ? `linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.62)), url(${b.imageUrl}) center/cover`
-                : 'linear-gradient(135deg,#1a1a2e,#0f3460)',
             }}
           >
-            <h2 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.02em' }}>{b.title}</h2>
-            {b.subtitle && <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 4 }}>{b.subtitle}</p>}
+            {b.imageUrl ? (
+              <Image
+                src={b.imageUrl}
+                alt={b.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority={idx === 0}
+              />
+            ) : (
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a2e,#0f3460)' }} />
+            )}
+            {/* readability overlay */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.62))' }} />
+            {/* text */}
+            <div style={{ position: 'relative', padding: 18, color: '#fff' }}>
+              <h2 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.02em' }}>{b.title}</h2>
+              {b.subtitle && <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 4 }}>{b.subtitle}</p>}
+            </div>
           </div>,
           b,
         ),
@@ -77,7 +79,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
 
       {/* Dots */}
       {banners.length > 1 && (
-        <div style={{ position: 'absolute', left: 18, bottom: 14, display: 'flex', gap: 6, zIndex: 2 }}>
+        <div style={{ position: 'absolute', left: 18, bottom: 14, display: 'flex', gap: 6, zIndex: 3 }}>
           {banners.map((_, idx) => (
             <button
               key={idx}
