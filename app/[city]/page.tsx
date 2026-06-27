@@ -6,12 +6,18 @@ import { StoreCard } from "@/components/StoreCard";
 import { BannerCarousel } from "@/components/BannerCarousel";
 import { RememberCity } from "@/components/RememberCity";
 import { NearMe } from "@/components/NearMe";
+import { CitySearch } from "@/components/CitySearch";
 import type { Store } from "@/types";
 
 interface Props {
   params: Promise<{ city: string }>;
-  searchParams: Promise<{ category?: string; q?: string }>;
 }
+
+// ISR: render once, edge-cache for 5 min. Search/filter are client-side so the
+// route stays static (reading searchParams would force per-request rendering).
+export const revalidate = 300;
+// Generate pages on demand and cache them (empty list = none prebuilt at build).
+export function generateStaticParams() { return []; }
 
 const CAT_GRADIENT: Record<string, string> = {
   grocery:    'linear-gradient(135deg,#11998e,#38ef7d)',
@@ -36,9 +42,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CityPage({ params, searchParams }: Props) {
+export default async function CityPage({ params }: Props) {
   const { city: citySlug } = await params;
-  const { category: filterCategory, q: searchQuery } = await searchParams;
 
   const [cities, allStores, banners] = await Promise.all([
     getCities(),
@@ -52,10 +57,6 @@ export default async function CityPage({ params, searchParams }: Props) {
     ?? { slug: citySlug, name: citySlug.charAt(0).toUpperCase() + citySlug.slice(1), state: '', id: '' };
   if (!cityFromList && !cityFromStores && allStores.length === 0) notFound();
 
-  let stores = allStores;
-  if (searchQuery) stores = stores.filter((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
-  const grouped = groupByCategory(stores);
   const allGrouped = groupByCategory(allStores);
 
   const promotedStores: Store[] = allStores
@@ -68,12 +69,6 @@ export default async function CityPage({ params, searchParams }: Props) {
     emoji: allGrouped[slug][0].category.emoji,
     count: allGrouped[slug].length,
   }));
-
-  const displayCategories = filterCategory
-    ? Object.keys(grouped).filter((c) => c === filterCategory)
-    : Object.keys(grouped);
-
-  const isDefaultView = !filterCategory && !searchQuery;
 
   return (
     <div style={{ minHeight: '100vh', background: '#f5f3ef' }}>
@@ -105,169 +100,76 @@ export default async function CityPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4">
-          <form method="GET">
-            <div className="relative" style={{ maxWidth: 540 }}>
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>🔍</span>
-              <input
-                name="q"
-                defaultValue={searchQuery}
-                placeholder={`Search stores in ${city.name}…`}
-                className="search-input w-full text-sm font-medium"
-                style={{ paddingLeft: 44, paddingRight: 16, paddingTop: 11, paddingBottom: 11 }}
-              />
-            </div>
-          </form>
-        </div>
-
-        {/* Category pill tabs */}
+        {/* Category pill tabs — link to the dedicated category route */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
-          {/* Home pill — always first */}
-          <Link
-            href={`/${citySlug}`}
-            className="nav-pill flex-shrink-0"
-            data-active={isDefaultView ? 'true' : 'false'}
-          >
+          <Link href={`/${citySlug}`} className="nav-pill flex-shrink-0" data-active="true">
             🏠 Home
           </Link>
-
-          {uniqueCategories.map((cat) => {
-            const active = filterCategory === cat.slug;
-            return (
-              <Link
-                key={cat.slug}
-                href={active ? `/${citySlug}` : `/${citySlug}?category=${cat.slug}${searchQuery ? `&q=${searchQuery}` : ''}`}
-                className="nav-pill flex-shrink-0"
-                data-active={active ? 'true' : 'false'}
-              >
-                {cat.emoji} {cat.name.split(' ')[0]}
-              </Link>
-            );
-          })}
+          {uniqueCategories.map((cat) => (
+            <Link
+              key={cat.slug}
+              href={`/${citySlug}/${cat.slug}`}
+              className="nav-pill flex-shrink-0"
+              data-active="false"
+            >
+              {cat.emoji} {cat.name.split(' ')[0]}
+            </Link>
+          ))}
         </div>
       </header>
 
       {/* ── Content ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
 
-        {/* ── Default view ── */}
-        {isDefaultView && (
-          <>
-            {/* Admin-managed hero banners (rotating) */}
-            <BannerCarousel banners={banners} />
+        {/* Client-side search (keeps this route static/edge-cacheable) */}
+        <CitySearch stores={allStores} citySlug={citySlug} placeholder={`Search stores in ${city.name}…`} />
 
-            {/* Shops near me (shows once stores have coordinates) */}
-            <NearMe stores={allStores} citySlug={citySlug} />
+        {/* Admin-managed hero banners (rotating) */}
+        <BannerCarousel banners={banners} />
 
-            {/* Today's Deals */}
-            {promotedStores.length > 0 && (
-              <section className="mb-8 fade-up" style={{ animationDelay: '0.05s' }}>
-                <div className="section-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="section-icon" style={{ background: 'linear-gradient(135deg,#e8401c,#f5a623)' }}>
-                      🔥
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 900, fontSize: 15, color: '#1a1a2e', letterSpacing: '-0.01em' }}>Today's Deals</div>
-                      <div className="section-label">Stores with active offers</div>
-                    </div>
-                  </div>
-                  <span className="sponsored-chip">Sponsored ✦</span>
+        {/* Shops near me (shows once stores have coordinates) */}
+        <NearMe stores={allStores} citySlug={citySlug} />
+
+        {/* Today's Deals */}
+        {promotedStores.length > 0 && (
+          <section className="mb-8 fade-up" style={{ animationDelay: '0.05s' }}>
+            <div className="section-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="section-icon" style={{ background: 'linear-gradient(135deg,#e8401c,#f5a623)' }}>🔥</div>
+                <div>
+                  <div style={{ fontWeight: 900, fontSize: 15, color: '#1a1a2e', letterSpacing: '-0.01em' }}>Today's Deals</div>
+                  <div className="section-label">Stores with active offers</div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {promotedStores.map((store) => (
-                    <StoreCard key={store.id} store={store} citySlug={citySlug} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-
-        {/* Search results label */}
-        {searchQuery && (
-          <p style={{ fontSize: 13, fontWeight: 500, color: '#9898a8', marginBottom: 20 }}>
-            {stores.length === 0 ? 'No stores found' : `${stores.length} result${stores.length > 1 ? 's' : ''}`}
-            {' '}for "<strong style={{ color: '#1a1a2e' }}>{searchQuery}</strong>"
-          </p>
-        )}
-
-        {/* Empty state */}
-        {stores.length === 0 && (filterCategory || searchQuery) && (
-          <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🏪</div>
-            <p style={{ fontWeight: 700, fontSize: 17, color: '#1a1a2e' }}>No stores found</p>
-            <Link href={`/${citySlug}`}>
-              <button style={{
-                marginTop: 20,
-                fontSize: 13,
-                fontWeight: 700,
-                padding: '10px 24px',
-                borderRadius: 99,
-                background: '#e8401c',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-              }}>
-                Clear filters
-              </button>
-            </Link>
-          </div>
-        )}
-
-        {/* Category sections — hidden on the default home view (deals only there) */}
-        {!isDefaultView && displayCategories.map((catSlug, i) => {
-          const catStores = grouped[catSlug];
-          if (!catStores) return null;
-          const cat = catStores[0].category;
-          const grad = CAT_GRADIENT[catSlug] || 'linear-gradient(135deg,#667eea,#764ba2)';
-          // On the city home, cap each category at 3 cards; "See all" only when more exist
-          const PREVIEW_LIMIT = 3;
-          const visibleStores = filterCategory ? catStores : catStores.slice(0, PREVIEW_LIMIT);
-          const hasMore = !filterCategory && catStores.length > PREVIEW_LIMIT;
-          return (
-            <section key={catSlug} className="mb-8 fade-up" style={{ animationDelay: `${i * 0.04}s` }}>
-              {!filterCategory && (
-                <div className="section-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="section-icon" style={{ background: grad }}>{cat.emoji}</div>
-                    <div>
-                      <div style={{ fontWeight: 900, fontSize: 15, color: '#1a1a2e', letterSpacing: '-0.01em' }}>{cat.name}</div>
-                      <div className="section-label">{catStores.length} stores</div>
-                    </div>
-                  </div>
-                  {hasMore && (
-                    <Link href={`/${citySlug}/${catSlug}`} className="see-all-pill">See all {catStores.length} →</Link>
-                  )}
-                </div>
-              )}
-              {filterCategory && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                  <div className="section-icon" style={{ background: grad }}>{cat.emoji}</div>
-                  <h1 style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', letterSpacing: '-0.02em' }}>
-                    {cat.name} in {city.name}
-                  </h1>
-                  <span style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: '3px 8px',
-                    borderRadius: 99,
-                    background: '#ffe8e5',
-                    color: '#e8401c',
-                  }}>
-                    {catStores.length}
-                  </span>
-                </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {visibleStores.map((store) => (
-                  <StoreCard key={store.id} store={store} citySlug={citySlug} />
-                ))}
               </div>
-            </section>
-          );
-        })}
+              <span className="sponsored-chip">Sponsored ✦</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {promotedStores.map((store) => (
+                <StoreCard key={store.id} store={store} citySlug={citySlug} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Browse by category */}
+        {uniqueCategories.length > 0 && (
+          <section className="mb-8">
+            <div className="section-label" style={{ marginBottom: 10 }}>Browse by category</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {uniqueCategories.map((cat) => (
+                <Link key={cat.slug} href={`/${citySlug}/${cat.slug}`}>
+                  <div className="premium-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px' }}>
+                    <span style={{ fontSize: 22 }}>{cat.emoji}</span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 13, color: '#1a1a2e' }}>{cat.name}</div>
+                      <div style={{ fontSize: 11, color: '#aaa' }}>{cat.count} {cat.count === 1 ? 'store' : 'stores'}</div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div style={{ textAlign: 'center', paddingTop: 24, borderTop: '1px solid rgba(0,0,0,0.07)' }}>
           <p style={{ fontSize: 13, color: '#b0b0be' }}>
