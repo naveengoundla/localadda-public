@@ -75,10 +75,21 @@ export default async function HomePage() {
 
       <footer className="px-6 py-6 text-center text-sm"
         style={{ borderTop: '1px solid rgba(0,0,0,0.07)', color: '#bbb' }}>
-        © 2026 LocalAdda ·{" "}
-        <Link href="https://dashboard.localadda.com" className="font-semibold" style={{ color: '#e8401c' }}>
-          List your store free →
-        </Link>
+        <p>
+          © 2026 LocalAdda ·{" "}
+          <Link href="https://dashboard.localadda.com" className="font-semibold" style={{ color: '#e8401c' }}>
+            List your store free →
+          </Link>
+        </p>
+        <p style={{ marginTop: 8, fontSize: 12, color: '#bbb', display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link href="/terms" style={{ color: '#999' }}>Terms</Link>
+          <Link href="/privacy" style={{ color: '#999' }}>Privacy</Link>
+          <Link href="/seller-terms" style={{ color: '#999' }}>Seller Terms</Link>
+          <Link href="/grievance" style={{ color: '#999' }}>Grievance</Link>
+        </p>
+        <p style={{ marginTop: 8, fontSize: 11, color: '#c4c4cc', maxWidth: 560, margin: '8px auto 0', lineHeight: 1.5 }}>
+          LocalAdda is a discovery platform, not the seller. Prices &amp; details are provided by stores — please confirm before buying.
+        </p>
       </footer>
     </div>
   );

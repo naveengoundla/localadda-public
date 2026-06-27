@@ -149,6 +149,15 @@ export function CityBrowse({ city, banners, stores }: { city: City; banners: Ban
             {stores.length} stores in {city.name} ·{' '}
             <Link href="https://dashboard.localadda.com" style={{ fontWeight: 600, color: '#e8401c' }}>List yours free →</Link>
           </p>
+          <p style={{ marginTop: 8, fontSize: 12, color: '#b0b0be', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/terms" style={{ color: '#999' }}>Terms</Link>
+            <Link href="/privacy" style={{ color: '#999' }}>Privacy</Link>
+            <Link href="/seller-terms" style={{ color: '#999' }}>Seller Terms</Link>
+            <Link href="/grievance" style={{ color: '#999' }}>Grievance</Link>
+          </p>
+          <p style={{ marginTop: 6, fontSize: 11, color: '#c4c4cc', maxWidth: 520, margin: '6px auto 0', lineHeight: 1.5 }}>
+            Prices &amp; details are provided by stores — please confirm before buying. LocalAdda is a listing platform, not the seller.
+          </p>
         </div>
       </div>
     </div>
