@@ -13,6 +13,9 @@ interface Props {
   params: Promise<{ city: string; category: string; store: string }>;
 }
 
+// ISR: render once, cache at the edge for 5 min (repeat views served by CDN).
+export const revalidate = 300;
+
 const CAT_GRADIENT: Record<string, string> = {
   grocery:    'linear-gradient(135deg,#11998e,#38ef7d)',
   clothing:   'linear-gradient(135deg,#f093fb,#f5576c)',
