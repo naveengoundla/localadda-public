@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getCities, getStoresByCity, groupByCategory } from "@/lib/api";
+import { getCities, getStoresByCity, getCityBanners, groupByCategory } from "@/lib/api";
 import { StoreCard } from "@/components/StoreCard";
+import { BannerCarousel } from "@/components/BannerCarousel";
 import type { Store } from "@/types";
 
 interface Props {
@@ -105,7 +106,11 @@ export default async function CityPage({ params, searchParams }: Props) {
   const { city: citySlug } = await params;
   const { category: filterCategory, q: searchQuery } = await searchParams;
 
-  const [cities, allStores] = await Promise.all([getCities(), getStoresByCity(citySlug)]);
+  const [cities, allStores, banners] = await Promise.all([
+    getCities(),
+    getStoresByCity(citySlug),
+    getCityBanners(citySlug),
+  ]);
 
   const cityFromList = cities.find((c) => c.slug === citySlug);
   const cityFromStores = allStores[0]?.city;
@@ -216,6 +221,9 @@ export default async function CityPage({ params, searchParams }: Props) {
         {/* ── Default view ── */}
         {isDefaultView && (
           <>
+            {/* Admin-managed hero banners (rotating) */}
+            <BannerCarousel banners={banners} />
+
             {/* City highlight card */}
             <div className="city-highlight-card mb-6 fade-up">
               <div style={{ padding: '20px 20px 18px' }}>

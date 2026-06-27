@@ -22,6 +22,20 @@ export async function getStore(storeSlug: string): Promise<Store | null> {
   return res.json();
 }
 
+export interface Banner {
+  id: string;
+  title: string;
+  subtitle?: string | null;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
+}
+
+export async function getCityBanners(citySlug: string): Promise<Banner[]> {
+  const res = await fetch(`${API}/api/cities/${citySlug}/banners`, { next: { revalidate: 120 } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function getCategories(): Promise<Category[]> {
   const res = await fetch(`${API}/api/categories`, { next: { revalidate: 3600 } });
   if (!res.ok) return [];
