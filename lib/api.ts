@@ -28,6 +28,8 @@ export interface Banner {
   subtitle?: string | null;
   imageUrl?: string | null;
   linkUrl?: string | null;
+  layout?: 'auto' | 'compact' | 'hero';
+  bgColor?: string | null;
 }
 
 export async function getCityBanners(citySlug: string): Promise<Banner[]> {

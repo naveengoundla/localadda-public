@@ -18,10 +18,11 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
 
   if (!banners.length) return null;
 
-  // Text-only banners (no images anywhere) render as a compact, vertically
-  // centered strip instead of a tall mostly-empty block.
-  const hasImage = banners.some((b) => !!b.imageUrl);
-  const minH = hasImage ? 150 : 92;
+  // Per-banner format: explicit layout wins, else auto (image → hero, text → compact).
+  const effective = (b: Banner): 'hero' | 'compact' =>
+    b.layout && b.layout !== 'auto' ? b.layout : (b.imageUrl ? 'hero' : 'compact');
+  // The carousel uses one height; if any slide is hero, use the taller frame.
+  const minH = banners.some((b) => effective(b) === 'hero') ? 150 : 92;
 
   function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX; }
   function onTouchEnd(e: React.TouchEvent) {
@@ -55,7 +56,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
               minHeight: minH,
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: hasImage ? 'flex-end' : 'center',
+              justifyContent: effective(b) === 'hero' ? 'flex-end' : 'center',
             }}
           >
             {b.imageUrl ? (
@@ -68,10 +69,12 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                 priority={idx === 0}
               />
             ) : (
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a2e,#0f3460)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: b.bgColor || 'linear-gradient(135deg,#1a1a2e,#0f3460)' }} />
             )}
-            {/* readability overlay */}
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.62))' }} />
+            {/* readability overlay — only over images */}
+            {b.imageUrl && (
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.62))' }} />
+            )}
             {/* text */}
             <div style={{ position: 'relative', padding: 18, color: '#fff' }}>
               <h2 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.15, letterSpacing: '-0.02em' }}>{b.title}</h2>
