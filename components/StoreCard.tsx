@@ -101,6 +101,19 @@ export function StoreCard({ store, citySlug }: { store: Store; citySlug: string 
           </div>
         )}
 
+        {/* Home delivery pill */}
+        {store.homeDelivery && (
+          <div style={{ marginBottom: 6 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontSize: 10.5, fontWeight: 700, color: '#1a7f43',
+              background: '#e7f6ec', borderRadius: 99, padding: '2px 8px',
+            }}>
+              🛵 Home Delivery
+            </span>
+          </div>
+        )}
+
         {/* Discount pill */}
         {activeDiscount && (
           <div style={{ marginBottom: 6 }}>
