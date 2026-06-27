@@ -5,6 +5,7 @@ import { getCities, getStoresByCity, getCityBanners, groupByCategory } from "@/l
 import { StoreCard } from "@/components/StoreCard";
 import { BannerCarousel } from "@/components/BannerCarousel";
 import { RememberCity } from "@/components/RememberCity";
+import { NearMe } from "@/components/NearMe";
 import type { Store } from "@/types";
 
 interface Props {
@@ -155,6 +156,9 @@ export default async function CityPage({ params, searchParams }: Props) {
           <>
             {/* Admin-managed hero banners (rotating) */}
             <BannerCarousel banners={banners} />
+
+            {/* Shops near me (shows once stores have coordinates) */}
+            <NearMe stores={allStores} citySlug={citySlug} />
 
             {/* Today's Deals */}
             {promotedStores.length > 0 && (
