@@ -1,12 +1,6 @@
 import Link from "next/link";
 import { getCities } from "@/lib/api";
 
-const CITY_EMOJI: Record<string, string> = {
-  mumbai: '🌊', pune: '🏙️', delhi: '🕌', bengaluru: '🌿',
-  hyderabad: '🍖', chennai: '🌴', ahmedabad: '🏛️', jaipur: '🌸',
-  vikarabad: '🌾',
-};
-
 export default async function HomePage() {
   const cities = await getCities();
   return (
@@ -39,7 +33,14 @@ export default async function HomePage() {
           {cities.map((city) => (
             <Link key={city.slug} href={`/${city.slug}`}>
               <div className="premium-card text-center p-5 cursor-pointer">
-                <div className="text-3xl mb-2">{CITY_EMOJI[city.slug] || '🏙️'}</div>
+                {city.imageUrl ? (
+                  <div className="mb-2" style={{
+                    width: 56, height: 56, margin: '0 auto 8px', borderRadius: 12,
+                    backgroundImage: `url(${city.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center',
+                  }} />
+                ) : (
+                  <div className="text-3xl mb-2">{city.emoji || '🏙️'}</div>
+                )}
                 <div className="font-bold text-sm" style={{ color: '#1a1a2e' }}>{city.name}</div>
                 <div className="text-xs mt-0.5" style={{ color: '#aaa' }}>{city.state}</div>
               </div>

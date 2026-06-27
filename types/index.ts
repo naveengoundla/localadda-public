@@ -3,6 +3,8 @@ export interface City {
   slug: string;
   name: string;
   state: string;
+  emoji?: string | null;
+  imageUrl?: string | null;
 }
 
 export interface CategoryField {
