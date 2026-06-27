@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { getCities } from "@/lib/api";
 
+// The entry point must reach the proxy on every request (so the sticky-city
+// redirect can fire); a prerendered/CDN-cached "/" would bypass it.
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const cities = await getCities();
   return (

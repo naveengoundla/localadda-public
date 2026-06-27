@@ -14,7 +14,9 @@ export function proxy(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = `/${city}`;
       url.search = '';
-      return NextResponse.redirect(url);
+      const res = NextResponse.redirect(url);
+      res.headers.set('Cache-Control', 'no-store'); // per-cookie → never cache
+      return res;
     }
   }
   return NextResponse.next();
