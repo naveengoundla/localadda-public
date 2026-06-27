@@ -23,74 +23,6 @@ const CAT_GRADIENT: Record<string, string> = {
   electrical: 'linear-gradient(135deg,#4776E6,#8E54E9)',
 };
 
-const CITY_INFO: Record<string, {
-  tagline: string;
-  highlights: { emoji: string; label: string }[];
-  funFact: string;
-}> = {
-  vikarabad: {
-    tagline: 'Gateway to the Nallamala Forest',
-    highlights: [
-      { emoji: '⛰️', label: 'Ananthagiri Hills' },
-      { emoji: '🌊', label: 'Kotepally Reservoir' },
-      { emoji: '🌿', label: 'Dachepalli Forest' },
-      { emoji: '🛕', label: 'Chilkur Balaji' },
-    ],
-    funFact: '60 km from Hyderabad · Known for waterfalls & trekking',
-  },
-  mumbai: {
-    tagline: 'The City That Never Sleeps',
-    highlights: [
-      { emoji: '🌉', label: 'Gateway of India' },
-      { emoji: '🎬', label: 'Bollywood Hub' },
-      { emoji: '🏖️', label: 'Juhu Beach' },
-      { emoji: '🏙️', label: 'Bandra-Worli Sea Link' },
-    ],
-    funFact: 'India\'s financial capital · Home to Bollywood',
-  },
-  hyderabad: {
-    tagline: 'City of Pearls & Biryani',
-    highlights: [
-      { emoji: '🏰', label: 'Charminar' },
-      { emoji: '🍚', label: 'Hyderabadi Biryani' },
-      { emoji: '💎', label: 'Pearl Market' },
-      { emoji: '🦁', label: 'Nehru Zoological Park' },
-    ],
-    funFact: 'Former seat of the Nizams · Now India\'s IT hub',
-  },
-  pune: {
-    tagline: 'Oxford of the East',
-    highlights: [
-      { emoji: '🏰', label: 'Shaniwar Wada' },
-      { emoji: '🎓', label: 'University Hub' },
-      { emoji: '🌄', label: 'Sinhagad Fort' },
-      { emoji: '🛕', label: 'Dagdusheth Ganpati' },
-    ],
-    funFact: 'Education & IT hub · Home to Maratha history',
-  },
-  delhi: {
-    tagline: 'Heart of Incredible India',
-    highlights: [
-      { emoji: '🕌', label: 'Red Fort' },
-      { emoji: '🏛️', label: 'India Gate' },
-      { emoji: '🛕', label: 'Qutub Minar' },
-      { emoji: '🛍️', label: 'Connaught Place' },
-    ],
-    funFact: 'Capital of India · 3000+ years of history',
-  },
-};
-
-const DEFAULT_CITY_INFO = {
-  tagline: 'Discover local businesses near you',
-  highlights: [
-    { emoji: '🏪', label: 'Local Stores' },
-    { emoji: '🍽️', label: 'Restaurants' },
-    { emoji: '🛒', label: 'Grocery' },
-    { emoji: '💊', label: 'Pharmacy' },
-  ],
-  funFact: 'Supporting local businesses in your city',
-};
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city: citySlug } = await params;
   const cities = await getCities();
@@ -117,8 +49,6 @@ export default async function CityPage({ params, searchParams }: Props) {
   const city = cityFromList ?? cityFromStores
     ?? { slug: citySlug, name: citySlug.charAt(0).toUpperCase() + citySlug.slice(1), state: '', id: '' };
   if (!cityFromList && !cityFromStores && allStores.length === 0) notFound();
-
-  const cityInfo = CITY_INFO[citySlug] ?? DEFAULT_CITY_INFO;
 
   let stores = allStores;
   if (searchQuery) stores = stores.filter((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -223,61 +153,6 @@ export default async function CityPage({ params, searchParams }: Props) {
           <>
             {/* Admin-managed hero banners (rotating) */}
             <BannerCarousel banners={banners} />
-
-            {/* City highlight card */}
-            <div className="city-highlight-card mb-6 fade-up">
-              <div style={{ padding: '20px 20px 18px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase',
-                      color: '#f5a623',
-                      marginBottom: 6,
-                    }}>
-                      📍 {city.name}{city.state ? `, ${city.state}` : ''}
-                    </p>
-                    <h2 style={{
-                      fontSize: 20,
-                      fontWeight: 900,
-                      color: '#fff',
-                      lineHeight: 1.25,
-                      letterSpacing: '-0.02em',
-                      marginBottom: 6,
-                    }}>
-                      {cityInfo.tagline}
-                    </h2>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>
-                      {cityInfo.funFact}
-                    </p>
-                  </div>
-                  <div style={{ fontSize: 40, flexShrink: 0, opacity: 0.9 }}>🗺️</div>
-                </div>
-
-                {/* Highlight chips */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
-                  {cityInfo.highlights.map((h) => (
-                    <span key={h.label} style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      padding: '6px 12px',
-                      borderRadius: 99,
-                      background: 'rgba(255,255,255,0.09)',
-                      color: 'rgba(255,255,255,0.82)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      backdropFilter: 'blur(4px)',
-                    }}>
-                      {h.emoji} {h.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
 
             {/* Today's Deals */}
             {promotedStores.length > 0 && (
