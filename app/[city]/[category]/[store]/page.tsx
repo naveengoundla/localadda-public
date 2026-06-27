@@ -91,6 +91,15 @@ export default async function StorePage({ params }: Props) {
           <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.72)' }}>
             {store.category.emoji} {store.category.name} · {store.city.name}
           </p>
+          {store.homeDelivery && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6,
+              fontSize: 11, fontWeight: 700, color: '#fff',
+              background: 'rgba(26,127,67,0.92)', borderRadius: 99, padding: '3px 10px',
+            }}>
+              🛵 Home Delivery
+            </span>
+          )}
           {store.description && (
             <div className="mt-1.5 max-w-2xl">
               <ExpandableText text={store.description} lines={1} size={11} color="rgba(255,255,255,0.82)" moreColor="#f5a623" />
