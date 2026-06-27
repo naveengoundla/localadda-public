@@ -100,7 +100,7 @@ export default async function CityPage({ params, searchParams }: Props) {
           }}>
             <span style={{ fontSize: 14 }}>📍</span>
             <span className="font-bold text-sm text-white">{city.name}</span>
-            <Link href="/?pick=1" className="text-xs ml-1 hidden sm:block" style={{ color: 'rgba(255,255,255,0.45)' }}>change</Link>
+            <Link href="/?pick=1" className="text-xs ml-1" style={{ color: 'rgba(255,255,255,0.45)' }}>change</Link>
           </div>
         </div>
 
