@@ -36,6 +36,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        {/* Capture the install prompt before hydration so it's never missed */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__deferredInstall=e;window.dispatchEvent(new Event('installavailable'))})",
+          }}
+        />
       </head>
       <body className={`min-h-screen ${inter.variable}`}>
         {children}

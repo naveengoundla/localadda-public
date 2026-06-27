@@ -23,6 +23,19 @@ export default function InstallPrompt() {
     const dismissedAt = Number(localStorage.getItem(DISMISS_KEY) || 0);
     if (dismissedAt && Date.now() - dismissedAt < DISMISS_DAYS * 864e5) return;
 
+    const stash = (window as unknown as { __deferredInstall?: Event }).__deferredInstall;
+    if (stash) {
+      setDeferred(stash as BeforeInstallPromptEvent);
+      setVisible(true);
+    }
+
+    const onAvailable = () => {
+      const e = (window as unknown as { __deferredInstall?: Event }).__deferredInstall;
+      if (e) {
+        setDeferred(e as BeforeInstallPromptEvent);
+        setVisible(true);
+      }
+    };
     const onPrompt = (e: Event) => {
       e.preventDefault(); // stop Chrome's mini-infobar; we drive it ourselves
       setDeferred(e as BeforeInstallPromptEvent);
@@ -33,9 +46,11 @@ export default function InstallPrompt() {
       setDeferred(null);
     };
 
+    window.addEventListener('installavailable', onAvailable);
     window.addEventListener('beforeinstallprompt', onPrompt);
     window.addEventListener('appinstalled', onInstalled);
     return () => {
+      window.removeEventListener('installavailable', onAvailable);
       window.removeEventListener('beforeinstallprompt', onPrompt);
       window.removeEventListener('appinstalled', onInstalled);
     };
