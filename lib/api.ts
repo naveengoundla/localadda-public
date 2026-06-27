@@ -38,6 +38,21 @@ export async function getCityBanners(citySlug: string): Promise<Banner[]> {
   return res.json();
 }
 
+export async function joinWaitlist(data: {
+  area?: string; region?: string; contact: string;
+  latitude?: number | null; longitude?: number | null;
+}): Promise<void> {
+  const res = await fetch(`${API}/api/waitlist`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => null);
+    throw new Error(e?.error || 'Could not join the waitlist');
+  }
+}
+
 export async function getCategories(): Promise<Category[]> {
   const res = await fetch(`${API}/api/categories`, { next: { revalidate: 3600 } });
   if (!res.ok) return [];

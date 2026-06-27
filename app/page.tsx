@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { getCities } from "@/lib/api";
 import { CityRedirect } from "@/components/CityRedirect";
+import { Waitlist } from "@/components/Waitlist";
 
 // The entry point must reach the proxy on every request (so the sticky-city
 // redirect can fire); a prerendered/CDN-cached "/" would bypass it.
@@ -9,6 +11,16 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const cities = await getCities();
+
+  // IP-based area from Cloudflare visitor-location headers (if enabled).
+  const h = await headers();
+  const detectedArea = h.get("cf-ipcity") || "";
+  const detectedRegion = h.get("cf-region") || "";
+  const lat = h.get("cf-iplatitude");
+  const lon = h.get("cf-iplongitude");
+  const served = !!detectedArea && cities.some(
+    (c) => c.name.toLowerCase() === detectedArea.toLowerCase() || c.slug === detectedArea.toLowerCase());
+
   return (
     <div style={{ minHeight: '100vh', background: '#f4f2ee' }}>
       <Suspense fallback={null}><CityRedirect /></Suspense>
@@ -53,6 +65,11 @@ export default async function HomePage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* IP-based waitlist for unserved areas */}
+        <div className="mt-8">
+          <Waitlist detectedArea={detectedArea} detectedRegion={detectedRegion} lat={lat} lon={lon} served={served} />
         </div>
       </div>
 
