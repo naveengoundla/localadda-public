@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { getCities } from "@/lib/api";
+import { CityRedirect } from "@/components/CityRedirect";
 
 // The entry point must reach the proxy on every request (so the sticky-city
 // redirect can fire); a prerendered/CDN-cached "/" would bypass it.
@@ -9,6 +11,7 @@ export default async function HomePage() {
   const cities = await getCities();
   return (
     <div style={{ minHeight: '100vh', background: '#f4f2ee' }}>
+      <Suspense fallback={null}><CityRedirect /></Suspense>
       <header style={{ background: 'linear-gradient(160deg,#1a1a2e,#0f3460)' }}
         className="max-w-full px-6 py-5 flex items-center justify-between">
         <div className="text-2xl font-black" style={{ color: '#f5a623' }}>

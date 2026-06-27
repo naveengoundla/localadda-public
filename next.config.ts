@@ -8,6 +8,8 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   fallbacks: { document: "/offline" },
   workboxOptions: {
     disableDevLogs: true,
+    skipWaiting: true,
+    clientsClaim: true,
     runtimeCaching: [
       {
         // Client-side API reads (current custom domain)
