@@ -18,6 +18,11 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
 
   if (!banners.length) return null;
 
+  // Text-only banners (no images anywhere) render as a compact, vertically
+  // centered strip instead of a tall mostly-empty block.
+  const hasImage = banners.some((b) => !!b.imageUrl);
+  const minH = hasImage ? 150 : 92;
+
   function onTouchStart(e: React.TouchEvent) { touchX.current = e.touches[0].clientX; }
   function onTouchEnd(e: React.TouchEvent) {
     if (touchX.current === null) return;
@@ -34,7 +39,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
       className="mb-6 fade-up"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
-      style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', minHeight: 150 }}
+      style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', minHeight: minH }}
     >
       {banners.map((b, idx) =>
         wrap(
@@ -47,10 +52,10 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
               opacity: idx === i ? 1 : 0,
               transition: 'opacity .45s ease',
               pointerEvents: idx === i ? 'auto' : 'none',
-              minHeight: 150,
+              minHeight: minH,
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'flex-end',
+              justifyContent: hasImage ? 'flex-end' : 'center',
             }}
           >
             {b.imageUrl ? (
@@ -79,7 +84,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
 
       {/* Dots */}
       {banners.length > 1 && (
-        <div style={{ position: 'absolute', left: 18, bottom: 14, display: 'flex', gap: 6, zIndex: 3 }}>
+        <div style={{ position: 'absolute', right: 18, bottom: 14, display: 'flex', gap: 6, zIndex: 3 }}>
           {banners.map((_, idx) => (
             <button
               key={idx}
