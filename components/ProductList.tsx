@@ -2,12 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { StoreItem, CategoryField } from "@/types";
-import { OrderBar, useCart, type OrderingInfo } from "@/components/OrderBar";
+import { OrderBar, type OrderingInfo } from "@/components/OrderBar";
+import { useStoreWishlist, type StoreRef } from "@/lib/wishlist";
 
 interface Props {
   items: StoreItem[];
   categoryEmoji: string;
+  store: StoreRef;
   ordering?: OrderingInfo | null;
   schema?: CategoryField[];
   categorySlug?: string;
@@ -62,14 +65,16 @@ function attrChips(item: StoreItem, schema?: CategoryField[], categorySlug?: str
   );
 }
 
-export function ProductList({ items, categoryEmoji, ordering, schema, categorySlug, layout = 'list', groupBy }: Props) {
+export function ProductList({ items, categoryEmoji, store, ordering, schema, categorySlug, layout = 'list', groupBy }: Props) {
   const isGrid = layout === 'grid';
   // Group items into sections by an attribute key (e.g. grocery "aisle",
   // restaurant "course"). 'menu' layout implies grouping by course.
   const groupKey = groupBy || (layout === 'menu' ? 'course' : '');
   const isGrouped = !!groupKey;
-  const { cart, update, clear } = useCart(ordering?.storeSlug ?? '');
-  const [preorderMode, setPreorderMode] = useState(false);
+  // Steppers write to the unified, cross-store Wishlist (works on every store).
+  // For ordering-enabled stores this same slice feeds the preorder flow below.
+  const { cart, update, clear } = useStoreWishlist(store, items);
+  const [listMode, setListMode] = useState(false);
 
   const isRestaurant = categorySlug === 'restaurant';
 
@@ -161,13 +166,15 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
   const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
   const didAutoOpen = useRef(false);
   useEffect(() => {
-    if (ordering && cartCount > 0 && !didAutoOpen.current) {
+    // If this store already has wishlist items, open list mode so the user sees
+    // their quantities (and, for ordering stores, can review the preorder).
+    if (cartCount > 0 && !didAutoOpen.current) {
       didAutoOpen.current = true;
-      setPreorderMode(true);
+      setListMode(true);
     }
-  }, [ordering, cartCount]);
+  }, [cartCount]);
 
-  const showSteppers = !!ordering && preorderMode;
+  const showSteppers = listMode;
 
   const close = useCallback(() => setOpenIndex(null), []);
   const prev = useCallback(() => setOpenIndex((i) => (i === null ? null : (i + galleryItems.length - 1) % galleryItems.length)), [galleryItems.length]);
@@ -292,11 +299,11 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         </div>
       )}
 
-      {/* ── Preorder mode hint (only while active) ── */}
-      {ordering && preorderMode && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: '#edfbf1', border: '1px solid rgba(29,185,84,0.2)', borderRadius: 12, padding: '8px 14px', marginBottom: 12 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#17a44b' }}>📋 Tap <span style={{ fontWeight: 900 }}>+ ADD</span> on items to preorder</div>
-          <button onClick={() => setPreorderMode(false)} style={{ fontSize: 12.5, fontWeight: 700, color: '#888', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Cancel</button>
+      {/* ── Wishlist mode hint (only while active) ── */}
+      {listMode && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: '#fff1ef', border: '1px solid rgba(232,64,28,0.2)', borderRadius: 12, padding: '8px 14px', marginBottom: 12 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#e8401c' }}>♡ Tap <span style={{ fontWeight: 900 }}>+ ADD</span> to save items to your wishlist</div>
+          <button onClick={() => setListMode(false)} style={{ fontSize: 12.5, fontWeight: 700, color: '#888', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Done</button>
         </div>
       )}
 
@@ -390,11 +397,11 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         </button>
       )}
 
-      {/* ── Floating preorder pill ── */}
-      {ordering && !preorderMode && (
-        <button onClick={() => setPreorderMode(true)}
-          style={{ position: 'fixed', right: 16, bottom: 'max(20px, env(safe-area-inset-bottom))', zIndex: 90, display: 'inline-flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg,#1db954,#17a44b)', color: '#fff', border: 'none', borderRadius: 99, padding: '12px 20px', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 6px 20px rgba(29,185,84,0.4)' }}>
-          🛒 Preorder
+      {/* ── Floating Wishlist pill (enters list mode; all stores) ── */}
+      {!listMode && (
+        <button onClick={() => setListMode(true)}
+          style={{ position: 'fixed', right: 16, bottom: 'max(20px, env(safe-area-inset-bottom))', zIndex: 90, display: 'inline-flex', alignItems: 'center', gap: 7, background: 'linear-gradient(135deg,#e8401c,#f5702a)', color: '#fff', border: 'none', borderRadius: 99, padding: '12px 20px', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 6px 20px rgba(232,64,28,0.4)' }}>
+          ♡ Wishlist{cartCount > 0 ? ` · ${cartCount}` : ''}
         </button>
       )}
 
@@ -446,9 +453,21 @@ export function ProductList({ items, categoryEmoji, ordering, schema, categorySl
         </>
       )}
 
-      {/* ── Cart bar + checkout ── */}
+      {/* ── Ordering store: preorder cart bar + checkout (reads the wishlist slice) ── */}
       {ordering && (
         <OrderBar items={items} ordering={ordering} cart={cart} updateCart={update} clearCart={clear} />
+      )}
+
+      {/* ── Non-ordering store: link to the global wishlist ── */}
+      {!ordering && cartCount > 0 && (
+        <div style={{ position: 'fixed', left: 16, right: 16, bottom: 'max(16px, env(safe-area-inset-bottom))', zIndex: 110, maxWidth: 560, margin: '0 auto' }}>
+          <Link href="/wishlist" style={{ textDecoration: 'none' }}>
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1a1a2e', color: '#fff', borderRadius: 16, padding: '14px 18px', boxShadow: '0 8px 28px rgba(0,0,0,0.35)' }}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>♡ {cartCount} item{cartCount > 1 ? 's' : ''} in wishlist</span>
+              <span style={{ fontWeight: 900, fontSize: 15 }}>View wishlist →</span>
+            </div>
+          </Link>
+        </div>
       )}
 
       {/* ── Lightbox ── */}

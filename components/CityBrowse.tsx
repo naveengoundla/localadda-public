@@ -147,7 +147,7 @@ export function CityBrowse({ city, banners, stores }: { city: City; banners: Ban
         <div style={{ textAlign: 'center', paddingTop: 24, marginTop: 8, borderTop: '1px solid rgba(0,0,0,0.07)' }}>
           <p style={{ fontSize: 13, color: '#b0b0be' }}>
             {stores.length} stores in {city.name} ·{' '}
-            <Link href="https://dashboard.localadda.com" style={{ fontWeight: 600, color: '#e8401c' }}>List yours free →</Link>
+            <Link href="https://dashboard.localadda.com" style={{ fontWeight: 600, color: '#e8401c' }}>List yours →</Link>
           </p>
           <p style={{ marginTop: 8, fontSize: 12, color: '#b0b0be', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/terms" style={{ color: '#999' }}>Terms</Link>
