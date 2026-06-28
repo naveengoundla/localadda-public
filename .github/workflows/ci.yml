@@ -18,7 +18,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - run: npm ci
+      # npm install (not `npm ci`): platform-specific optional deps (@emnapi/*
+      # for sharp / Next image optimizer) resolve to different versions on the
+      # Linux runner than on the dev machine, so a committed lockfile drifts.
+      - run: npm install --no-audit --no-fund
 
       - name: Typecheck
         run: npx tsc --noEmit

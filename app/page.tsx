@@ -78,7 +78,7 @@ export default async function HomePage() {
         <p>
           © 2026 LocalAdda ·{" "}
           <Link href="https://dashboard.localadda.com" className="font-semibold" style={{ color: '#e8401c' }}>
-            List your store free →
+            List your store →
           </Link>
         </p>
         <p style={{ marginTop: 8, fontSize: 12, color: '#bbb', display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>

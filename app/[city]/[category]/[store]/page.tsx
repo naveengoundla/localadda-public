@@ -139,6 +139,14 @@ export default async function StorePage({ params }: Props) {
                   categorySlug={store.category.slug}
                   layout={store.category.layout}
                   groupBy={store.category.groupBy}
+                  store={{
+                    id: store.id,
+                    slug: store.slug,
+                    name: store.name,
+                    citySlug: store.city.slug,
+                    categorySlug: store.category.slug,
+                    orderingEnabled: !!(store.orderingEnabled && store.phone),
+                  }}
                   ordering={store.orderingEnabled && store.phone ? {
                     storeSlug: store.slug,
                     storeName: store.name,
